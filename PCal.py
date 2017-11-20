@@ -229,6 +229,7 @@ def pcal_retrend(argv):
     axar[0].set_ylabel('standard deviation')
     
     axar[1].hist(std)
+    axar[1].grid()
     axar[1].set_xlabel('standard deviation')
     axar[1].set_ylabel('tones')
     
