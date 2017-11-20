@@ -217,12 +217,19 @@ def pcal_retrend(argv):
     plt.ylabel('phase')
     plt.show()
     
+    f, axar = plt.subplots(2)
+    
     j = 0
     while j < counter:
-        plt.plot((ntones[j] + 1), std[j], 'o')
+        axar[0].plot((ntones[j] + 1), std[j], 'o')
         j = j + 1
     
-    plt.grid()
-    plt.xlabel('tone numbers')
-    plt.ylabel('standard deviation')
+    axar[0].grid()
+    axar[0].set_xlabel('tone numbers')
+    axar[0].set_ylabel('standard deviation')
+    
+    axar[1].hist(std)
+    axar[1].set_xlabel('standard deviation')
+    axar[1].set_ylabel('tones')
+    
     plt.show()
