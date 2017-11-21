@@ -235,3 +235,5 @@ def pcal_retrend(argv):
     axar[1].set_ylabel('tones')
     
     plt.show()
+
+#add: smth similar about amplitudes; average; remake getopt
