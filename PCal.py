@@ -1,6 +1,7 @@
 def pcal_read(argv):
     import numpy as np
     import cmath
+    import math
     import getopt
     import sys
     
@@ -8,13 +9,13 @@ def pcal_read(argv):
     
     def usage():
         print 'Hello, this is the USAGE function.'
-        print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers>.'
-        print 'For example: pcal_read("-f", "W:/Files/My_File", "-n", "1 : 20, 40, 25, 300 : 408")'
+        print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude>.'
+        print 'For example: pcal_read("-f", "W:/Files/My_File", "-n", "1 : 20, 40, 25, 300 : 408", "-t" "phase")'
     
     ifile = ''
     ntones = '1 : 512'
     try:
-        opts, args = getopt.getopt(argv, 'hf:n:', ['ifile=', 'ntones='])
+        opts, args = getopt.getopt(argv, 'hf:n:t:', ['ifile=', 'ntones=', 'type='])
     except getopt.GetoptError:
         print 'Looks like something went wrong. \n'
         usage()
@@ -27,6 +28,8 @@ def pcal_read(argv):
             ifile = arg
         elif opt in ('-n', '--ntones'):
             ntones = arg
+        elif opt in ('-t', '--type'):
+            type = arg
     
     ifile = open(ifile)
     acc_periods = len((ifile).readlines()) - 5
@@ -86,10 +89,24 @@ def pcal_read(argv):
         smh = smh.split()[6:]
         i = 0
         while i < counter:
-            table[i].append(cmath.phase(complex(float(smh[2+int(ntones[i])*4]),float(smh[3+int(ntones[i])*4])))*(180/np.pi))
+            if type == 'phase':
+                table[i].append(cmath.phase(complex(float(smh[2+int(ntones[i])*4]),float(smh[3+int(ntones[i])*4])))*(180/np.pi))
+            elif type == 'amplitude':
+                table[i].append(math.hypot(float(smh[2+int(ntones[i])*4]), float(smh[3+int(ntones[i])*4])))
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
+    
+    if type == 'amplitude':
+        k = 0
+        while k < counter:
+            j = 0
+            m = max(table[k])
+            while j < acc_periods:
+                q = (table[k])[j] / m
+                (table[k])[j] = q
+                j = j + 1
+            k = k + 1
     
     q = raw_input('Print the table (y/n)? ')
     if q == 'y':
@@ -115,10 +132,10 @@ def pcal_plot(argv):
         plt.plot(time, np.unwrap(table[i - 1]))
         i = i - 1
     
-    plt.axis([0, acc_periods * 0.5, -200, 200])
+    #plt.axis([0, acc_periods * 0.5, -200, 200])
     plt.grid()
     plt.xlabel('time')
-    plt.ylabel('phase')
+    plt.ylabel('phase / amplitude')
     plt.show()
     
     condition = raw_input('Plot the signal (y/n)? ')
@@ -163,7 +180,7 @@ def pcal_trend(argv):
     
     plt.grid()
     plt.xlabel('time')
-    plt.ylabel('phase')
+    plt.ylabel('phase / amplitude')
     plt.show()
     
     AC = len(time)
@@ -211,10 +228,10 @@ def pcal_retrend(argv):
         re_table = []
         i = i + 1
             
-    plt.axis([0, acc_periods * 0.5, -180, 180])
+    #plt.axis([0, acc_periods * 0.5, -180, 180])
     plt.grid()
     plt.xlabel('time')
-    plt.ylabel('phase')
+    plt.ylabel('phase / amplitude')
     plt.show()
     
     f, axar = plt.subplots(2)
