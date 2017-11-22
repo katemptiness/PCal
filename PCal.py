@@ -252,4 +252,4 @@ def pcal_retrend(argv):
     
     plt.show()
 
-#add: average; remake getopt
+#add: average; remake getopt; FChK
