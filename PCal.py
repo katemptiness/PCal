@@ -244,6 +244,9 @@ def pcal_retrend(argv):
 def pcal_pfr(argv):
     import matplotlib.pyplot as plt
     import numpy as np
+    import numpy.linalg as linalg
+    
+    global li
     
     pcal_read(argv)
     
@@ -260,6 +263,14 @@ def pcal_pfr(argv):
         i = i + 1
     
     plt.plot(ntones, np.unwrap(li))
+    
+    trends = []
+    
+    A = (np.vstack([ntones, np.ones(len(ntones))])).transpose()
+    m, c = linalg.lstsq(A, np.unwrap(li))[0]
+    trend = m * ntones + c
+    
+    plt.plot(ntones, trend)
     
     plt.grid()
     plt.xlabel('frequency')
