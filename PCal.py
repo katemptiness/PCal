@@ -218,6 +218,8 @@ def pcal_retrend(argv):
     import numpy as np
     import matplotlib.pyplot as plt
     
+    global std
+    
     pcal_trend(argv)
     
     re_trends = []
@@ -268,4 +270,27 @@ def pcal_retrend(argv):
     
     plt.show()
 
-#add: average; remake getopt; FChH
+
+def pcal_pfr(argv):
+    import matplotlib.pyplot as plt
+    
+    pcal_read(argv)
+    
+    li = []
+    
+    i = 0
+    while i < counter:
+	j = 0
+	sum = 0
+	while j < acc_periods:
+	    sum = sum + (table[i])[j]
+	    j = j + 1
+	li.append(sum / acc_periods)
+	i = i + 1
+    
+    plt.plot(ntones, li)
+    
+    plt.grid()
+    plt.xlabel('frequency')
+    plt.ylabel(type)
+    plt.show()
