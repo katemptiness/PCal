@@ -5,7 +5,7 @@ def pcal_read(argv):
     import getopt
     import sys
     
-    global table, acc_periods, counter, ph, ntones, ifile
+    global table, acc_periods, counter, ph, ntones, ifile, type
     
     def usage():
         print 'Hello, this is the USAGE function.'
@@ -107,16 +107,18 @@ def pcal_read(argv):
             i = i + 1
         j = j + 1
     
-    if type == 'amplitude':
-        k = 0
-        while k < counter:
-            j = 0
-            m = max(table[k])
-            while j < acc_periods:
-                q = (table[k])[j] / m
-                (table[k])[j] = q
-                j = j + 1
-            k = k + 1
+    
+    #rationing. donneed it?
+    #if type == 'amplitude':
+        #k = 0
+        #while k < counter:
+            #j = 0
+            #m = max(table[k])
+            #while j < acc_periods:
+                #q = (table[k])[j] / m
+                #(table[k])[j] = q
+                #j = j + 1
+            #k = k + 1
     
     q = raw_input('Print the table (y/n)? ')
     if q == 'y':
@@ -142,10 +144,15 @@ def pcal_plot(argv):
         plt.plot(time, np.unwrap(table[i - 1]))
         i = i - 1
     
-    #plt.axis([0, acc_periods * 0.5, -200, 200])
+    if type == 'phase':
+	plt.axis([0, acc_periods * 0.5, -200, 200])
+    elif type == 'amplitude':
+	plt.axis([0, acc_periods * 0.5, 0, 0.006])
+
     plt.grid()
     plt.xlabel('time')
-    plt.ylabel('phase / amplitude')
+    
+    plt.ylabel(type)
     plt.show()
     
     condition = raw_input('Plot the signal (y/n)? ')
@@ -190,7 +197,7 @@ def pcal_trend(argv):
     
     plt.grid()
     plt.xlabel('time')
-    plt.ylabel('phase / amplitude')
+    plt.ylabel(type)
     plt.show()
     
     AC = len(time)
@@ -238,10 +245,14 @@ def pcal_retrend(argv):
         re_table = []
         i = i + 1
             
-    #plt.axis([0, acc_periods * 0.5, -180, 180])
+    if type == 'phase':
+	plt.axis([0, acc_periods * 0.5, -180, 180])
+    elif type == 'amplitude':
+	plt.axis([0, 0.5 * acc_periods * 0.5, 0, 0.006])
+    
     plt.grid()
     plt.xlabel('time')
-    plt.ylabel('phase / amplitude')
+    plt.ylabel(type)
     plt.show()
     
     f, axar = plt.subplots(2)
@@ -256,10 +267,9 @@ def pcal_retrend(argv):
     axar[0].set_ylabel('standard deviation')
     
     axar[1].hist(std)
-    axar[1].grid()
     axar[1].set_xlabel('standard deviation')
     axar[1].set_ylabel('tones')
     
     plt.show()
 
-#add: average; remake getopt; FChK
+#add: average; remake getopt; FChH
