@@ -103,8 +103,7 @@ def pcal_read(argv):
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
-    
-    
+        
     #rationing. donneed it?
     #if type == 'amplitude':
         #k = 0
@@ -142,9 +141,9 @@ def pcal_plot(argv):
         i = i - 1
     
     if type == 'phase':
-	plt.axis([0, acc_periods * 0.5, -200, 200])
+        plt.axis([0, acc_periods * 0.5, -200, 200])
     elif type == 'amplitude':
-	plt.axis([0, acc_periods * 0.5, 0, 0.006])
+        plt.axis([0, acc_periods * 0.5, 0, 0.006])
 
     plt.grid()
     plt.xlabel('time')
@@ -243,9 +242,9 @@ def pcal_retrend(argv):
         i = i + 1
             
     if type == 'phase':
-	plt.axis([0, acc_periods * 0.5, -180, 180])
+        plt.axis([0, acc_periods * 0.5, -180, 180])
     elif type == 'amplitude':
-	plt.axis([0, 0.5 * acc_periods * 0.5, 0, 0.006])
+        plt.axis([0, 0.5 * acc_periods * 0.5, 0, 0.006])
     
     plt.grid()
     plt.xlabel('time')
