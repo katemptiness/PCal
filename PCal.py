@@ -93,29 +93,17 @@ def pcal_read(argv):
     j = 0
     while j < acc_periods:
         smh = ifile.readline()
-        smh = smh.split()[6:]
+        smh = (smh.split())[6:]
         i = 0
         while i < counter:
             if type == 'phase':
-                table[i].append(cmath.phase(complex(float(smh[2+int(ntones[i])*4]),float(smh[3+int(ntones[i])*4])))*(180/np.pi))
+                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
             elif type == 'amplitude':
-                table[i].append(math.hypot(float(smh[2+int(ntones[i])*4]), float(smh[3+int(ntones[i])*4])))
+                table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])))
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
         
-    #rationing. donneed it?
-    #if type == 'amplitude':
-        #k = 0
-        #while k < counter:
-            #j = 0
-            #m = max(table[k])
-            #while j < acc_periods:
-                #q = (table[k])[j] / m
-                #(table[k])[j] = q
-                #j = j + 1
-            #k = k + 1
-    
     q = raw_input('Print the table (y/n)? ')
     if q == 'y':
         i = 0
@@ -147,7 +135,6 @@ def pcal_plot(argv):
 
     plt.grid()
     plt.xlabel('time')
-    
     plt.ylabel(type)
     plt.show()
     
@@ -173,9 +160,6 @@ def pcal_trend(argv):
     global trends
     
     pcal_read(argv)
-    
-    print
-    print 'Without the tilt retracting:'
     
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
     
@@ -227,9 +211,6 @@ def pcal_retrend(argv):
     
     std = []
     
-    print
-    print 'With the tilt retracting:'
-    
     i = 0
     while i < counter:
         j = 0
@@ -238,21 +219,10 @@ def pcal_retrend(argv):
             re_trends.append((trends[i])[j] - j * re)
             re_table.append((table[i])[j] - j * re)
             j = j + 1
-        plt.plot(np.unwrap(re_table))
         std.append(np.std(np.unwrap(re_table)))
         re_table = []
         i = i + 1
             
-    if type == 'phase':
-        plt.axis([0, acc_periods * 0.5, -180, 180])
-    elif type == 'amplitude':
-        plt.axis([0, 0.5 * acc_periods * 0.5, 0, 0.006])
-    
-    plt.grid()
-    plt.xlabel('time')
-    plt.ylabel(type)
-    plt.show()
-    
     f, axar = plt.subplots(2)
     
     j = 0
@@ -273,6 +243,7 @@ def pcal_retrend(argv):
 
 def pcal_pfr(argv):
     import matplotlib.pyplot as plt
+    import numpy as np
     
     pcal_read(argv)
     
@@ -280,15 +251,15 @@ def pcal_pfr(argv):
     
     i = 0
     while i < counter:
-	j = 0
-	sum = 0
-	while j < acc_periods:
-	    sum = sum + (table[i])[j]
-	    j = j + 1
-	li.append(sum / acc_periods)
-	i = i + 1
+        j = 0
+        sum = 0
+        while j < acc_periods:
+            sum = sum + (table[i])[j]
+            j = j + 1
+        li.append(sum / acc_periods)
+        i = i + 1
     
-    plt.plot(ntones, li)
+    plt.plot(ntones, np.unwrap(li))
     
     plt.grid()
     plt.xlabel('frequency')
