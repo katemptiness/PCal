@@ -14,6 +14,7 @@ def pcal_read(argv):
     
     ifile = ''
     ntones = '1 : 512'
+    type = 'phase'
     try:
         opts, args = getopt.getopt(argv, 'hf:n:t:', ['ifile=', 'ntones=', 'type='])
     except getopt.GetoptError:
@@ -25,11 +26,20 @@ def pcal_read(argv):
             usage()
             sys.exit()
         elif opt in ('-f', '--ifile'):
-            ifile = arg
+            if arg[0] == ' ':
+                ifile = arg[1:]
+            else:
+                ifile = arg
         elif opt in ('-n', '--ntones'):
-            ntones = arg
+            if arg[0] == ' ':
+                ntones = arg[1:]
+            else:
+                ntones = arg
         elif opt in ('-t', '--type'):
-            type = arg
+            if arg[0] == ' ':
+                type = arg[1:]
+            else:
+                type = arg
     
     ifile = open(ifile)
     acc_periods = len((ifile).readlines()) - 5
