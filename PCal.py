@@ -1,3 +1,8 @@
+def usage():
+    print 'Hello, this is the USAGE function.'
+    print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude>.'
+    print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase")'
+
 def pcal_read(argv):
     import numpy as np
     import cmath
@@ -7,14 +12,6 @@ def pcal_read(argv):
     
     global table, acc_periods, counter, ph, ntones, ifile, type
     
-    def usage():
-        print 'Hello, this is the USAGE function.'
-        print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude>.'
-        print 'For example: pcal_read("-f", "W:/Files/My_File", "-n", "1 : 20, 40, 25, 300 : 408", "-t" "phase")'
-    
-    ifile = ''
-    ntones = '1 : 512'
-    type = 'phase'
     try:
         opts, args = getopt.getopt(argv, 'hf:n:t:', ['ifile=', 'ntones=', 'type='])
     except getopt.GetoptError:
