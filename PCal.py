@@ -99,7 +99,7 @@ def pcal_read(argv):
             if type == 'phase':
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
             elif type == 'amplitude':
-                table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])))
+                table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
@@ -245,8 +245,7 @@ def pcal_pfr(argv):
     import matplotlib.pyplot as plt
     import numpy as np
     import numpy.linalg as linalg
-    
-    global li
+    import math
     
     pcal_read(argv)
     
@@ -276,3 +275,11 @@ def pcal_pfr(argv):
     plt.xlabel('frequency')
     plt.ylabel(type)
     plt.show()
+    
+    AB = abs(max(trend) - min(trend))
+    BC = counter - 1
+    AC = math.hypot(AB, BC)
+    alpha = np.arcsin(AB / AC) * (180 / np.pi)
+    
+    delay = abs(np.tan(alpha))
+    print delay
