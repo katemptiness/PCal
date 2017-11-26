@@ -1,4 +1,3 @@
-#here we go
 def usage():
     print 'Hello, this is the USAGE function.'
     print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude>.'
