@@ -1,17 +1,16 @@
+import numpy as np, numpy.fft as fft, numpy.linalg as linalg
+import cmath, math
+import getopt, sys
+import matplotlib.pyplot as plt
+
 def usage():
     print 'Hello, this is the USAGE function.'
     print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude>.'
     print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase")'
 
 def pcal_read(argv):
-    import numpy as np
-    import cmath
-    import math
-    import getopt
-    import sys
-    
     global table, acc_periods, counter, ph, ntones, ifile, type
-    
+
     try:
         opts, args = getopt.getopt(argv, 'hf:n:t:', ['ifile=', 'ntones=', 'type='])
     except getopt.GetoptError:
@@ -115,10 +114,6 @@ def pcal_read(argv):
 
 
 def pcal_plot(argv):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import numpy.fft as fft
-    
     pcal_read(argv)
     
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
@@ -153,12 +148,8 @@ def pcal_plot(argv):
 
 
 def pcal_trend(argv):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import numpy.linalg as linalg
-    
     global trends
-    
+
     pcal_read(argv)
     
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
@@ -199,9 +190,6 @@ def pcal_trend(argv):
 
 
 def pcal_retrend(argv):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    
     global std
     
     pcal_trend(argv)
@@ -242,11 +230,6 @@ def pcal_retrend(argv):
 
 
 def pcal_pfr(argv):
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import numpy.linalg as linalg
-    import math
-    
     pcal_read(argv)
     
     li = []
