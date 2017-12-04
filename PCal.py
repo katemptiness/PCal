@@ -229,6 +229,19 @@ def pcal_retrend(argv):
     plt.show()
 
 
+def pcal_filt(argv):
+    global std_good
+
+    pcal_retrend(argv)
+
+    std_good = []
+    i = 0
+    while i < len(std):
+        if std[i] < 2:
+            std_good.append(std[i])
+        i = i + 1
+
+
 def pcal_pfr(argv):
     pcal_read(argv)
     
@@ -260,10 +273,16 @@ def pcal_pfr(argv):
     plt.show()
     
     if type == 'phase':
-        AB = abs(max(trend) - min(trend))
-        BC = (counter - 1) * 10 ** 6
-        AC = math.hypot(AB, BC)
-        alpha = np.arcsin(AB / AC) * (180 / np.pi)
+        #AB = abs(max(trend) - min(trend))
+        #BC = (counter - 1) * 10 ** 6
+        #AC = math.hypot(AB, BC)
+        #alpha = np.arcsin(AB / AC) * (180 / np.pi)
 
-        delay = np.tan(alpha)
-        print 'For this range the delay is', delay
+        #delay = np.tan(alpha)
+        #print 'For this range the delay is', delay
+
+        a = abs(max(trend) - min(trend))
+        b = (counter - 1) * (10 ** 6)
+
+        delay = (a * (np.pi / 180)) / b
+        print delay
