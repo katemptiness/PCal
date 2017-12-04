@@ -259,10 +259,11 @@ def pcal_pfr(argv):
     plt.ylabel(type)
     plt.show()
     
-    AB = abs(max(trend) - min(trend))
-    BC = counter - 1
-    AC = math.hypot(AB, BC)
-    alpha = np.arcsin(AB / AC) * (180 / np.pi)
-    
-    delay = abs(np.tan(alpha))
-    print delay
+    if type == 'phase':
+        AB = abs(max(trend) - min(trend))
+        BC = (counter - 1) * 10 ** 6
+        AC = math.hypot(AB, BC)
+        alpha = np.arcsin(AB / AC) * (180 / np.pi)
+
+        delay = np.tan(alpha)
+        print 'For this range the delay is', delay
