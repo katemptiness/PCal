@@ -121,6 +121,8 @@ def pcal_read(argv):
 
     ifile.close()
 
+    return table
+
 
 def pcal_plot(argv):
     pcal_read(argv)
@@ -248,6 +250,8 @@ def pcal_retrend(argv):
 
 
 def pcal_delay(argv):
+    global delay
+
     pcal_retrend(argv)
     
     li = []
