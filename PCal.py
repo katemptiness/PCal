@@ -9,10 +9,13 @@ def usage():
     print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase")'
 
 def pcal_read(argv):
-    global table, acc_periods, counter, ph, ntones, ifile, type
+    global table, acc_periods, counter, ph, ntones, ifile, type, dbg
+
+    type = 'phase'
+    dbg = 'false'
 
     try:
-        opts, args = getopt.getopt(argv, 'hf:n:t:', ['ifile=', 'ntones=', 'type='])
+        opts, args = getopt.getopt(argv, 'hf:n:t:d:', ['ifile=', 'ntones=', 'type=', 'dbg='])
     except getopt.GetoptError:
         print 'Looks like something went wrong. \n'
         usage()
@@ -36,7 +39,12 @@ def pcal_read(argv):
                 type = arg[1:]
             else:
                 type = arg
-    
+        elif opt in ('-d', '--dbg'):
+            if arg[0] == ' ':
+                dbg = arg[1:]
+            else:
+                dbg = arg
+
     ifile = open(ifile)
     acc_periods = len((ifile).readlines()) - 5
     ifile.seek(0)
@@ -103,12 +111,13 @@ def pcal_read(argv):
             i = i + 1
         j = j + 1
         
-    q = raw_input('Print the table (y/n)? ')
-    if q == 'y':
-        i = 0
-        while i < counter:
-            print table[i]
-            i = i + 1
+    if dbg == 'true':
+        q = raw_input('Print the table? (y / n) ')
+        if q == 'y':
+            i = 0
+            while i < counter:
+                print table[i]
+                i = i + 1
 
     ifile.close()
 
@@ -120,31 +129,33 @@ def pcal_plot(argv):
     
     i = counter
     while i > 0:
-        plt.plot(time, np.unwrap(table[i - 1]))
+        if dbg == 'true':
+            plt.plot(time, np.unwrap(table[i - 1]))
         i = i - 1
     
-    if type == 'phase':
-        plt.axis([0, acc_periods * 0.5, -200, 200])
-    elif type == 'amplitude':
-        plt.axis([0, acc_periods * 0.5, 0, 0.006])
+    if dbg == 'true':
+        if type == 'phase':
+            plt.axis([0, acc_periods * 0.5, -200, 200])
+        elif type == 'amplitude':
+            plt.axis([0, acc_periods * 0.5, 0, 0.006])
 
-    plt.grid()
-    plt.xlabel('time')
-    plt.ylabel(type)
-    plt.show()
-    
-    condition = raw_input('Plot the signal (y/n)? ')
-    if condition == 'y':
-        time = np.linspace(0, 1e-6, counter)
-        j = 0
-        while j < acc_periods:
-            ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
-            j = j + 1
-            plt.plot(time, ph1)
         plt.grid()
         plt.xlabel('time')
-        plt.ylabel('amplitude')
+        plt.ylabel(type)
         plt.show()
+    
+        condition = raw_input('Plot the signal (y/n)? ')
+        if condition == 'y':
+            time = np.linspace(0, 1e-6, counter)
+            j = 0
+            while j < acc_periods:
+                ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
+                j = j + 1
+                plt.plot(time, ph1)
+            plt.grid()
+            plt.xlabel('time')
+            plt.ylabel('amplitude')
+            plt.show()
 
 
 def pcal_trend(argv):
@@ -163,13 +174,15 @@ def pcal_trend(argv):
         m, c = linalg.lstsq(A, np.unwrap(table[i - 1]))[0]
         trend = m * time + c
         trends.append(trend)
-        plt.plot(time, trend)
+        if dbg == 'true':
+            plt.plot(time, trend)
         i = i + 1
     
-    plt.grid()
-    plt.xlabel('time')
-    plt.ylabel(type)
-    plt.show()
+    if dbg == 'true':
+        plt.grid()
+        plt.xlabel('time')
+        plt.ylabel(type)
+        plt.show()
     
     AC = len(time)
     
@@ -180,22 +193,25 @@ def pcal_trend(argv):
         BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
         AB = np.sqrt(BC * BC + AC * AC)
         alpha = np.arcsin(BC / AB) * (180 / np.pi)
-        plt.plot((ntones[j] + 1), alpha, 'o')
+        if dbg == 'true':
+            plt.plot((ntones[j] + 1), alpha, 'o')
         j = j + 1
     
-    plt.grid()
-    plt.xlabel('tone numbers')
-    plt.ylabel('tilt angle')
-    plt.show()
+    if dbg == 'true':
+        plt.grid()
+        plt.xlabel('tone numbers')
+        plt.ylabel('tilt angle')
+        plt.show()
 
 
 def pcal_retrend(argv):
-    global std
+    global std, new_table
     
     pcal_trend(argv)
     
     re_trends = []
     re_table = []
+    new_table = []
     
     std = []
     
@@ -208,42 +224,31 @@ def pcal_retrend(argv):
             re_table.append((table[i])[j] - j * re)
             j = j + 1
         std.append(np.std(np.unwrap(re_table)))
+        new_table.append(re_table)
         re_table = []
         i = i + 1
             
-    f, axar = plt.subplots(2)
-    
-    j = 0
-    while j < counter:
-        axar[0].plot((ntones[j] + 1), std[j], 'o')
-        j = j + 1
-    
-    axar[0].grid()
-    axar[0].set_xlabel('tone numbers')
-    axar[0].set_ylabel('standard deviation')
-    
-    axar[1].hist(std)
-    axar[1].set_xlabel('standard deviation')
-    axar[1].set_ylabel('tones')
-    
-    plt.show()
+    if dbg == 'true':
+        f, axar = plt.subplots(2)
+        
+        j = 0
+        while j < counter:
+            axar[0].plot((ntones[j] + 1), std[j], 'o')
+            j = j + 1
+        
+        axar[0].grid()
+        axar[0].set_xlabel('tone numbers')
+        axar[0].set_ylabel('standard deviation')
+        
+        axar[1].hist(std)
+        axar[1].set_xlabel('standard deviation')
+        axar[1].set_ylabel('tones')
+        
+        plt.show()
 
 
-def pcal_filt(argv):
-    global std_good
-
+def pcal_delay(argv):
     pcal_retrend(argv)
-
-    std_good = []
-    i = 0
-    while i < len(std):
-        if std[i] < 2:
-            std_good.append(std[i])
-        i = i + 1
-
-
-def pcal_pfr(argv):
-    pcal_read(argv)
     
     li = []
     
@@ -252,12 +257,13 @@ def pcal_pfr(argv):
         j = 0
         sum = 0
         while j < acc_periods:
-            sum = sum + (table[i])[j]
+            sum = sum + (new_table[i])[j]
             j = j + 1
         li.append(sum / acc_periods)
         i = i + 1
     
-    plt.plot(ntones, np.unwrap(li))
+    if dbg == 'true':
+        plt.plot(ntones, np.unwrap(li))
     
     trends = []
     
@@ -265,24 +271,22 @@ def pcal_pfr(argv):
     m, c = linalg.lstsq(A, np.unwrap(li))[0]
     trend = m * ntones + c
     
-    plt.plot(ntones, trend)
-    
-    plt.grid()
-    plt.xlabel('frequency')
-    plt.ylabel(type)
-    plt.show()
+    if dbg == 'true':
+        plt.plot(ntones, trend)
+
+    if dbg == 'true':       
+        plt.grid()
+        plt.xlabel('frequency')
+        plt.ylabel(type)
+        plt.show()
     
     if type == 'phase':
-        #AB = abs(max(trend) - min(trend))
-        #BC = (counter - 1) * 10 ** 6
-        #AC = math.hypot(AB, BC)
-        #alpha = np.arcsin(AB / AC) * (180 / np.pi)
-
-        #delay = np.tan(alpha)
-        #print 'For this range the delay is', delay
-
         a = abs(max(trend) - min(trend))
         b = (counter - 1) * (10 ** 6)
 
         delay = (a * (np.pi / 180)) / b
-        print delay
+        
+        if dbg == 'true':
+            print 'For this range the delay is', delay
+
+    return delay
