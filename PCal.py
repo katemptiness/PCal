@@ -13,6 +13,7 @@ def pcal_read(argv):
 
     type = 'phase'
     dbg = 'false'
+    ntones = '1 : 512'
 
     try:
         opts, args = getopt.getopt(argv, 'hf:n:t:d:', ['ifile=', 'ntones=', 'type=', 'dbg='])
