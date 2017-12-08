@@ -5,8 +5,10 @@ import matplotlib.pyplot as plt
 
 def usage():
     print 'Hello, this is the USAGE function.'
-    print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude>.'
-    print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase")'
+    print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude> -d <false / true>.'
+    print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase", "-d true")'
+    print
+    print '-n, -t & -d parameters are: -1 : 512, -phase & -false as default, so you can use: delay = PCal.pcal_delay(["-f My_File"]).'
 
 def pcal_read(argv):
     global table, acc_periods, counter, ph, ntones, ifile, type, dbg
@@ -243,8 +245,9 @@ def pcal_retrend(argv):
         axar[0].set_xlabel('tone numbers')
         axar[0].set_ylabel('standard deviation')
         
-        axar[1].hist(std)
-        axar[1].set_xlabel('standard deviation')
+        #axar[1].hist(std, bins = int(round(counter / 10)))
+        axar[1].hist(std, bins = counter)
+	axar[1].set_xlabel('standard deviation')
         axar[1].set_ylabel('tones')
         
         plt.show()
