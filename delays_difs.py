@@ -3,6 +3,9 @@ def delays_difs(a):
     import PCal
     reload(PCal)
     
+    global b
+    b = a
+
     a = os.listdir(a)
 
     files = []
@@ -43,3 +46,6 @@ def delays_difs(a):
         i = i + 1
     
     return delays_diff
+
+def help_me():
+    return b

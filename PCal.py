@@ -52,7 +52,11 @@ def pcal_read(argv):
                 dbg = arg
 
     if ifile[:5] == 'files':
-        a = os.listdir(os.getcwd())
+        import delays_difs
+        p = delays_difs.help_me()
+        
+        a = os.listdir(p)
+        
         files = []
         i = 0
         while i < len(a):
@@ -66,6 +70,8 @@ def pcal_read(argv):
         else:
             ifile = files[int(ifile[6])]
     
+        ifile = p + '/' + ifile
+
     ifile = open(ifile)
     acc_periods = len((ifile).readlines()) - 5
     ifile.seek(0)
