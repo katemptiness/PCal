@@ -114,14 +114,6 @@ def pcal_read(argv):
             i = i + 1
         j = j + 1
         
-    if dbg == 'true':
-        q = raw_input('Print the table? (y / n) ')
-        if q == 'y':
-            i = 0
-            while i < counter:
-                print table[i]
-                i = i + 1
-
     ifile.close()
 
     return table
@@ -245,9 +237,8 @@ def pcal_retrend(argv):
         axar[0].set_xlabel('tone numbers')
         axar[0].set_ylabel('standard deviation')
         
-        #axar[1].hist(std, bins = int(round(counter / 10)))
         axar[1].hist(std, bins = counter)
-	axar[1].set_xlabel('standard deviation')
+        axar[1].set_xlabel('standard deviation')
         axar[1].set_ylabel('tones')
         
         plt.show()
@@ -294,7 +285,4 @@ def pcal_delay(argv):
 
         delay = (a * (np.pi / 180)) / b
         
-        if dbg == 'true':
-            print 'For this range the delay is', delay
-
     return delay
