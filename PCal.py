@@ -2,6 +2,9 @@ import numpy as np, numpy.fft as fft, numpy.linalg as linalg
 import cmath, math
 import getopt, sys
 import matplotlib.pyplot as plt
+import os
+
+ch = 0
 
 def usage():
     print 'Hello, this is the USAGE function.'
@@ -11,14 +14,14 @@ def usage():
     print '-n, -t & -d parameters are: -1 : 512, -phase & -false as default, so you can use: delay = PCal.pcal_delay(["-f My_File"]).'
 
 def pcal_read(argv):
-    global table, acc_periods, counter, ph, ntones, ifile, type, dbg
+    global table, acc_periods, counter, ph, ntones, ifile, itype, dbg, ch
 
-    type = 'phase'
+    itype = 'phase'
     dbg = 'false'
     ntones = '1 : 512'
 
     try:
-        opts, args = getopt.getopt(argv, 'hf:n:t:d:', ['ifile=', 'ntones=', 'type=', 'dbg='])
+        opts, args = getopt.getopt(argv, 'hf:n:t:d:', ['ifile=', 'ntones=', 'itype=', 'dbg='])
     except getopt.GetoptError:
         print 'Looks like something went wrong. \n'
         usage()
@@ -37,17 +40,32 @@ def pcal_read(argv):
                 ntones = arg[1:]
             else:
                 ntones = arg
-        elif opt in ('-t', '--type'):
+        elif opt in ('-t', '--itype'):
             if arg[0] == ' ':
-                type = arg[1:]
+                itype = arg[1:]
             else:
-                type = arg
+                itype = arg
         elif opt in ('-d', '--dbg'):
             if arg[0] == ' ':
                 dbg = arg[1:]
             else:
                 dbg = arg
 
+    if ifile[:5] == 'files':
+        a = os.listdir(os.getcwd())
+        files = []
+        i = 0
+        while i < len(a):
+            if (a[i])[:5] == 'PCAL_':
+                files.append(a[i])
+            i = i + 1
+        if type(ifile[6]) is str:
+            k = ch
+            ch = ch + 1
+            ifile = files[int(k)]
+        else:
+            ifile = files[int(ifile[6])]
+    
     ifile = open(ifile)
     acc_periods = len((ifile).readlines()) - 5
     ifile.seek(0)
@@ -102,18 +120,30 @@ def pcal_read(argv):
     
     j = 0
     while j < acc_periods:
-        smh = ifile.readline()
-        smh = (smh.split())[6:]
+        smh = ((ifile.readline()).split())[6:]
         i = 0
         while i < counter:
-            if type == 'phase':
+            if itype == 'phase':
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
-            elif type == 'amplitude':
+            elif itype == 'amplitude':
                 table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
         
+    average = 2
+    sum = 0
+    if average > 1:
+        ph_new = ph
+        k = 0
+        while k < (acc_periods * counter):
+            i = 0
+            while i < average:
+                sum = sum + ph_new[k]
+                i = i + 1
+            sum = sum / average
+            k = k + 1
+
     ifile.close()
 
     return table
@@ -131,14 +161,14 @@ def pcal_plot(argv):
         i = i - 1
     
     if dbg == 'true':
-        if type == 'phase':
+        if itype == 'phase':
             plt.axis([0, acc_periods * 0.5, -200, 200])
-        elif type == 'amplitude':
+        elif itype == 'amplitude':
             plt.axis([0, acc_periods * 0.5, 0, 0.006])
 
         plt.grid()
         plt.xlabel('time')
-        plt.ylabel(type)
+        plt.ylabel(itype)
         plt.show()
     
         condition = raw_input('Plot the signal (y/n)? ')
@@ -178,7 +208,7 @@ def pcal_trend(argv):
     if dbg == 'true':
         plt.grid()
         plt.xlabel('time')
-        plt.ylabel(type)
+        plt.ylabel(itype)
         plt.show()
     
     AC = len(time)
@@ -276,10 +306,10 @@ def pcal_delay(argv):
     if dbg == 'true':       
         plt.grid()
         plt.xlabel('frequency')
-        plt.ylabel(type)
+        plt.ylabel(itype)
         plt.show()
     
-    if type == 'phase':
+    if itype == 'phase':
         a = abs(max(trend) - min(trend))
         b = (counter - 1) * (10 ** 6)
 
