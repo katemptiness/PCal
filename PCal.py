@@ -53,6 +53,7 @@ def pcal_read(argv):
 
     if ifile[:5] == 'files':
         import delays_difs
+	reload(delays_difs)
         p = delays_difs.help_me()
         
         a = os.listdir(p)
