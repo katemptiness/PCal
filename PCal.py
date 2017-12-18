@@ -257,7 +257,7 @@ def pcal_retrend(argv):
             re_table.append((table[i])[j] - j * re)
             j = j + 1
         std.append(np.std(np.unwrap(re_table)))
-        new_table.append(re_table)
+	new_table.append(re_table)
         re_table = []
         i = i + 1
             
@@ -287,29 +287,41 @@ def pcal_delay(argv):
     
     li = []
     
+    j = 0
+    good_table = []
+    good_ntones = []
+    while j < counter:
+	if itype == 'phase':
+	    if std[j] < 2:
+		good_table.append(new_table[j])
+		good_ntones.append(j)
+	j = j + 1
+    
+    good_ntones = np.asarray(good_ntones)
+    
     i = 0
-    while i < counter:
+    while i < len(good_ntones):
         j = 0
         sum = 0
         while j < acc_periods:
-            sum = sum + (new_table[i])[j]
+            sum = sum + (good_table[i])[j]
             j = j + 1
         li.append(sum / acc_periods)
         i = i + 1
     
     if dbg == 'true':
-        plt.plot(ntones, np.unwrap(li))
+        plt.plot(good_ntones, np.unwrap(li))
     
     trends = []
     
-    A = (np.vstack([ntones, np.ones(len(ntones))])).transpose()
+    A = (np.vstack([good_ntones, np.ones(len(good_ntones))])).transpose()
     m, c = linalg.lstsq(A, np.unwrap(li))[0]
-    trend = m * ntones + c
+    trend = m * good_ntones + c
     
     if dbg == 'true':
-        plt.plot(ntones, trend)
+        plt.plot(good_ntones, trend)
 
-    if dbg == 'true':       
+    if dbg == 'true':
         plt.grid()
         plt.xlabel('frequency')
         plt.ylabel(itype)

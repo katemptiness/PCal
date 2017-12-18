@@ -25,17 +25,21 @@ def delays_difs(a):
     k = 0
     while k < len(files):
         if (files[k])[18:20] == 'BV':
-            delays_bv.append(PCal.pcal_delay(['-f files[k]']))
+            delays_bv.append(PCal.pcal_delay(['-f files[k]', '-n 128 : 384']))
             files_bv.append(files[k])
         elif (files[k])[18:20] == 'ZV':
-            delays_zv.append(PCal.pcal_delay(['-f files[k]']))
+            delays_zv.append(PCal.pcal_delay(['-f files[k]', '-n 128 : 384']))
             files_zv.append(files[k])
         k = k + 1
 
+    files_bv.sort()
+    delays_bv.sort()
+    
+    files_zv.sort()
+    delays_zv.sort()
+    
     delays_diff = []
     i = 0
-    files_bv.sort()
-    files_zv.sort()
     while i < len(files_bv):
         if (files_bv[i])[:18] == (files_zv[i])[:18]:
 	    delays_diff.append(abs(delays_bv[i] - delays_zv[i]))
