@@ -32,12 +32,6 @@ def delays_difs(a):
             files_zv.append(files[k])
         k = k + 1
 
-    #delays_zv.append(delays_zv[0])
-    #del delays_zv[0]
-
-    #files_zv.append(files_zv[0])
-    #del files_zv[0]
-
     delays_diff = []
     i = 0
     files_bv.sort()
