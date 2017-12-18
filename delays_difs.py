@@ -40,9 +40,11 @@ def delays_difs(a):
 
     delays_diff = []
     i = 0
+    files_bv.sort()
+    files_zv.sort()
     while i < len(files_bv):
         if (files_bv[i])[:18] == (files_zv[i])[:18]:
-            delays_diff.append(abs(delays_bv[i] - delays_zv[i]))
+	    delays_diff.append(abs(delays_bv[i] - delays_zv[i]))
         i = i + 1
     
     return delays_diff
