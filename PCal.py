@@ -134,7 +134,12 @@ def pcal_read(argv):
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
             elif itype == 'amplitude':
                 table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
-            ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
+            #elif itype == 'phase-amplitude':
+		#table1 = []
+		#table2 = []
+		#table1[i].append(cmath.phase(complex(float(smh[(len(smh)-1)-1-int(ntones[i])*4]),float(smh[(len(smh)-1)-int(ntones[i])*4])))
+		#table2[i].append(math.hypot(float(smh[(len(smh)-1)-1-int(ntones[i]*4)]),float(smh[(len(smh)-1)-int(ntones[i])*4]))*1000)
+	    ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
         
@@ -151,6 +156,11 @@ def pcal_read(argv):
             sum = sum / average
             k = k + 1
 
+    if itype == 'phase-amplitude':
+	import matplotlib.pyplot as plt
+	plt.plot(table2, table1)
+	plt.show()
+    
     ifile.close()
 
     return table
@@ -164,14 +174,14 @@ def pcal_plot(argv):
     i = counter
     while i > 0:
         if dbg == 'true':
-            plt.plot(time, np.unwrap(table[i - 1]))
+            plt.plot(time, (table[i - 1]))
         i = i - 1
     
-    if dbg == 'true':
-        if itype == 'phase':
-            plt.axis([0, acc_periods * 0.5, -200, 200])
-        elif itype == 'amplitude':
-            plt.axis([0, acc_periods * 0.5, 0, 0.006])
+    #if dbg == 'true':
+        #if itype == 'phase':
+            #plt.axis([0, acc_periods * 0.5, -200, 200])
+        #elif itype == 'amplitude':
+            #plt.axis([0, acc_periods * 0.5, 0, 0.006])
 
         plt.grid()
         plt.xlabel('time')
@@ -203,9 +213,9 @@ def pcal_trend(argv):
     
     i = 0
     while i < counter:
-        plt.plot(time, np.unwrap(table[i - 1]), 'o')
+	plt.plot(time, (table[i - 1]), 'o')
         A = (np.vstack([time, np.ones(len(time))])).transpose()
-        m, c = linalg.lstsq(A, np.unwrap(table[i - 1]))[0]
+        m, c = linalg.lstsq(A, (table[i - 1]))[0]
         trend = m * time + c
         trends.append(trend)
         if dbg == 'true':
@@ -311,7 +321,7 @@ def pcal_delay(argv):
         i = i + 1
     
     if dbg == 'true':
-        plt.plot(good_ntones, np.unwrap(li))
+	plt.plot(good_ntones, np.unwrap(li))
     
     trends = []
     
