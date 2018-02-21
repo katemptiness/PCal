@@ -124,6 +124,9 @@ def pcal_read(argv):
     
     table = (np.empty((counter, 0))).tolist()
     ph = []
+
+    table1 = (np.empty((counter, 0))).tolist()
+    table2 = (np.empty((counter, 0))).tolist()
     
     j = 0
     while j < acc_periods:
@@ -134,36 +137,35 @@ def pcal_read(argv):
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
             elif itype == 'amplitude':
                 table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
-            #elif itype == 'phase-amplitude':
-		#table1 = []
-		#table2 = []
-		#table1[i].append(cmath.phase(complex(float(smh[(len(smh)-1)-1-int(ntones[i])*4]),float(smh[(len(smh)-1)-int(ntones[i])*4])))
-		#table2[i].append(math.hypot(float(smh[(len(smh)-1)-1-int(ntones[i]*4)]),float(smh[(len(smh)-1)-int(ntones[i])*4]))*1000)
-	    ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
+            elif itype == 'phase-amplitude':
+                table1[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
+                table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
+            ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
         
-    average = 2
-    sum = 0
-    if average > 1:
-        ph_new = ph
-        k = 0
-        while k < (acc_periods * counter):
-            i = 0
-            while i < average:
-                sum = sum + ph_new[k]
-                i = i + 1
-            sum = sum / average
-            k = k + 1
+    #average = 2
+    #sum = 0
+    #if average > 1:
+        #ph_new = ph
+        #k = 0
+        #while k < (acc_periods * counter):
+            #i = 0
+            #while i < average:
+                #sum = sum + ph_new[k]
+                #i = i + 1
+            #sum = sum / average
+            #k = k + 1
 
     if itype == 'phase-amplitude':
-	import matplotlib.pyplot as plt
-	plt.plot(table2, table1)
-	plt.show()
+        import matplotlib.pyplot as plt
+        plt.plot(table1, table2, 'o')
+        plt.axis([-190, 190, 0, 6])
+        plt.show()
     
     ifile.close()
 
-    return table
+    #return table
 
 
 def pcal_plot(argv):
