@@ -14,7 +14,7 @@ def usage():
     print '-n, -t & -d parameters are: -1 : 512, -phase & -false as default, so you can use: delay = PCal.pcal_delay(["-f My_File"]).'
 
 def pcal_read(argv):
-    global table, acc_periods, counter, ph, ntones, ifile, itype, dbg, ch
+    global table, table1, table2, acc_periods, counter, ph, ntones, ifile, itype, dbg, ch
 
     itype = 'phase'
     dbg = 'false'
@@ -144,64 +144,50 @@ def pcal_read(argv):
             i = i + 1
         j = j + 1
         
-    #average = 2
-    #sum = 0
-    #if average > 1:
-        #ph_new = ph
-        #k = 0
-        #while k < (acc_periods * counter):
-            #i = 0
-            #while i < average:
-                #sum = sum + ph_new[k]
-                #i = i + 1
-            #sum = sum / average
-            #k = k + 1
-
-    if itype == 'phase-amplitude':
-        import matplotlib.pyplot as plt
-        plt.plot(table1, table2, 'o')
-        plt.axis([-190, 190, 0, 6])
-        plt.show()
-    
     ifile.close()
 
-    #return table
+    if itype == 'phase-amplitude':
+        return 
+    else: 
+        return table
 
 
 def pcal_plot(argv):
     pcal_read(argv)
     
-    time = np.linspace(0, 0.5 * acc_periods, acc_periods)
-    
-    i = counter
-    while i > 0:
-        if dbg == 'true':
-            plt.plot(time, (table[i - 1]))
-        i = i - 1
-    
-    #if dbg == 'true':
-        #if itype == 'phase':
-            #plt.axis([0, acc_periods * 0.5, -200, 200])
-        #elif itype == 'amplitude':
-            #plt.axis([0, acc_periods * 0.5, 0, 0.006])
-
+    if itype == 'phase-amplitude':
+        plt.plot(table1, table2, 'o')
         plt.grid()
-        plt.xlabel('time')
-        plt.ylabel(itype)
+        plt.xlabel('phase')
+        plt.ylabel('amplitude')
         plt.show()
     
-        condition = raw_input('Plot the signal (y/n)? ')
-        if condition == 'y':
-            time = np.linspace(0, 1e-6, counter)
-            j = 0
-            while j < acc_periods:
-                ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
-                j = j + 1
-                plt.plot(time, ph1)
+    else:
+        time = np.linspace(0, 0.5 * acc_periods, acc_periods)
+    
+        i = counter
+        while i > 0:
+            if dbg == 'true':
+                plt.plot(time, (table[i - 1]))
+            i = i - 1
+    
             plt.grid()
             plt.xlabel('time')
-            plt.ylabel('amplitude')
+            plt.ylabel(itype)
             plt.show()
+    
+            condition = raw_input('Plot the signal (y/n)? ')
+            if condition == 'y':
+                time = np.linspace(0, 1e-6, counter)
+                j = 0
+                while j < acc_periods:
+                    ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
+                    j = j + 1
+                    plt.plot(time, ph1)
+                plt.grid()
+                plt.xlabel('time')
+                plt.ylabel('amplitude')
+                plt.show()
 
 
 def pcal_trend(argv):
