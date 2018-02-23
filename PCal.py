@@ -167,27 +167,27 @@ def pcal_plot(argv):
     
         i = counter
         while i > 0:
-            if dbg == 'true':
-                plt.plot(time, (table[i - 1]))
+            plt.plot(time, (table[i - 1]))
             i = i - 1
     
+        plt.grid()
+        plt.xlabel('time')
+        plt.ylabel(itype)
+        plt.show()
+    
+        condition = raw_input('Plot the signal (y/n)? ')
+        if condition == 'y':
+            time = np.linspace(0, 1e-6, counter)
+            j = 0
+            while j < acc_periods:
+                ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
+                j = j + 1
+                plt.plot(time, ph1)
+            
             plt.grid()
             plt.xlabel('time')
-            plt.ylabel(itype)
+            plt.ylabel('amplitude')
             plt.show()
-    
-            condition = raw_input('Plot the signal (y/n)? ')
-            if condition == 'y':
-                time = np.linspace(0, 1e-6, counter)
-                j = 0
-                while j < acc_periods:
-                    ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
-                    j = j + 1
-                    plt.plot(time, ph1)
-                plt.grid()
-                plt.xlabel('time')
-                plt.ylabel('amplitude')
-                plt.show()
 
 
 def pcal_trend(argv):
