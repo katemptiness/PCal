@@ -255,7 +255,7 @@ def pcal_retrend(argv):
             re_trends.append((trends[i])[j] - j * re)
             re_table.append((table[i])[j] - j * re)
             j = j + 1
-        std.append(np.std(np.unwrap(re_table)))
+        std.append(np.std((re_table)))
 	new_table.append(re_table)
         re_table = []
         i = i + 1
