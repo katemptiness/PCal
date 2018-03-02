@@ -311,12 +311,14 @@ def pcal_delay(argv):
         i = i + 1
     
     if dbg == 'true':
-	plt.plot(good_ntones, np.unwrap(li))
+	   #plt.plot(good_ntones, np.unwrap(li))
+        plt.plot(good_ntones, li)
     
     trends = []
     
     A = (np.vstack([good_ntones, np.ones(len(good_ntones))])).transpose()
-    m, c = linalg.lstsq(A, np.unwrap(li))[0]
+    #m, c = linalg.lstsq(A, np.unwrap(li))[0]
+    m, c = linalg.lstsq(A, li)[0]
     trend = m * good_ntones + c
     
     if dbg == 'true':
