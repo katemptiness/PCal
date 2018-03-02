@@ -286,12 +286,14 @@ def pcal_delay(argv):
     
     li = []
     
+    std_threshold = 2 * round(min(std))
+
     j = 0
     good_table = []
     good_ntones = []
     while j < counter:
 	if itype == 'phase':
-	    if std[j] < 2:
+	    if std[j] < std_threshold:
 		good_table.append(new_table[j])
 		good_ntones.append(j)
 	j = j + 1
