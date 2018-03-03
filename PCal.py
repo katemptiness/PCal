@@ -6,22 +6,16 @@ import os
 
 ch = 0
 
-def usage():
-    print 'Hello, this is the USAGE function.'
-    print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude> -d <false / true>.'
-    print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase", "-d true")'
-    print
-    print '-n, -t & -d parameters are: -1 : 512, -phase & -false as default, so you can use: delay = PCal.pcal_delay(["-f My_File"]).'
-
-def pcal_read(argv):
-    global table, table1, table2, acc_periods, counter, ph, ntones, ifile, itype, dbg, ch
+def main():
+    global itype, dbg, ntones, ifile
 
     itype = 'phase'
     dbg = 'false'
     ntones = '1 : 512'
+    what = 'plot'
 
     try:
-        opts, args = getopt.getopt(argv, 'hf:n:t:d:', ['ifile=', 'ntones=', 'itype=', 'dbg='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:', ['ifile=', 'ntones=', 'itype=', 'dbg='])
     except getopt.GetoptError:
         print 'Looks like something went wrong. \n'
         usage()
@@ -51,28 +45,40 @@ def pcal_read(argv):
             else:
                 dbg = arg
 
-    if ifile[:5] == 'files':
-        import delays_difs
-	reload(delays_difs)
-        p = delays_difs.help_me()
-        
-        a = os.listdir(p)
-        
-        files = []
-        i = 0
-        while i < len(a):
-            if (a[i])[:5] == 'PCAL_':
-                files.append(a[i])
-            i = i + 1
-        if type(ifile[6]) is str:
-            k = ch
-            ch = ch + 1
-            ifile = files[int(k)]
-        else:
-            ifile = files[int(ifile[6])]
     
-        ifile = p + '/' + ifile
+def usage():
+    print 'Hello, this is the USAGE function.'
+    print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude> -d <false / true>.'
+    print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase", "-d true")'
+    print
+    print '-n, -t & -d parameters are: -1 : 512, -phase & -false as default, so you can use: delay = PCal.pcal_delay(["-f My_File"]).'
 
+
+def pcal_read(ifile, ntones, itype, dbg):
+    global table, table2, acc_periods, counter, ph, ntones_full
+    
+    #if ifile[:5] == 'files':
+        #import delays_difs
+	#reload(delays_difs)
+        #p = delays_difs.help_me()
+        
+        #a = os.listdir(p)
+        
+        #files = []
+        #i = 0
+        #while i < len(a):
+            #if (a[i])[:5] == 'PCAL_':
+                #files.append(a[i])
+            #i = i + 1
+        #if type(ifile[6]) is str:
+            #k = ch
+            #ch = ch + 1
+            #ifile = files[int(k)]
+        #else:
+            #ifile = files[int(ifile[6])]
+    
+        #ifile = p + '/' + ifile
+    
     ifile = open(ifile)
     acc_periods = len((ifile).readlines()) - 5
     ifile.seek(0)
@@ -115,17 +121,18 @@ def pcal_read(argv):
     
     ntones = np.append(np.asarray(ntones), tones_1)
     ntones.sort()
-    counter = len(ntones)
+    ntones_full = ntones
+    counter = len(ntones_full)
     
     k = 0
     while k < counter:
-        ntones[k] = int(ntones[k]) - 1
+        ntones_full[k] = int(ntones_full[k]) - 1
         k = k + 1
-    
+
     table = (np.empty((counter, 0))).tolist()
     ph = []
 
-    table1 = (np.empty((counter, 0))).tolist()
+    table = (np.empty((counter, 0))).tolist()
     table2 = (np.empty((counter, 0))).tolist()
     
     j = 0
@@ -134,13 +141,13 @@ def pcal_read(argv):
         i = 0
         while i < counter:
             if itype == 'phase':
-                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
+                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
             elif itype == 'amplitude':
-                table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
+                table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
             elif itype == 'phase-amplitude':
-                table1[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
-                table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
-            ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
+                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
+                table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
+            ph.append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
             i = i + 1
         j = j + 1
         
@@ -150,13 +157,13 @@ def pcal_read(argv):
         return 
     else: 
         return table
+    
 
-
-def pcal_plot(argv):
-    pcal_read(argv)
+def pcal_plot(ifile, ntones, itype, dbg):
+    pcal_read(ifile, ntones, itype, dbg)
     
     if itype == 'phase-amplitude':
-        plt.plot(table1, table2, 'o')
+        plt.plot(table, table2, 'o')
         plt.grid()
         plt.xlabel('phase')
         plt.ylabel('amplitude')
@@ -190,10 +197,10 @@ def pcal_plot(argv):
             plt.show()
 
 
-def pcal_trend(argv):
+def pcal_trend(ifile, ntones, itype, dbg):
     global trends
 
-    pcal_read(argv)
+    pcal_read(ifile, ntones, itype, dbg)
     
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
     
@@ -219,14 +226,14 @@ def pcal_trend(argv):
     AC = len(time)
     
     alphas = []
-    
+
     j = 0
     while j < counter:
         BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
         AB = np.sqrt(BC * BC + AC * AC)
         alpha = np.arcsin(BC / AB) * (180 / np.pi)
         if dbg == 'true':
-            plt.plot((ntones[j] + 1), alpha, 'o')
+            plt.plot((ntones_full[j] + 1), alpha, 'o')
         j = j + 1
     
     if dbg == 'true':
@@ -236,10 +243,10 @@ def pcal_trend(argv):
         plt.show()
 
 
-def pcal_retrend(argv):
+def pcal_retrend(ifile, ntones, itype, dbg):
     global std, new_table
     
-    pcal_trend(argv)
+    pcal_trend(ifile, ntones, itype, dbg)
     
     re_trends = []
     re_table = []
@@ -265,7 +272,7 @@ def pcal_retrend(argv):
         
         j = 0
         while j < counter:
-            axar[0].plot((ntones[j] + 1), std[j], 'o')
+            axar[0].plot((ntones_full[j] + 1), std[j], 'o')
             j = j + 1
         
         axar[0].grid()
@@ -279,10 +286,10 @@ def pcal_retrend(argv):
         plt.show()
 
 
-def pcal_delay(argv):
+def pcal_delay(ifile, ntones, itype, dbg):
     global delay
 
-    pcal_retrend(argv)
+    pcal_retrend(ifile, ntones, itype, dbg)
     
     li = []
     
@@ -336,4 +343,20 @@ def pcal_delay(argv):
 
         delay = (a * (np.pi / 180)) / b
         
+    print 'The time delay is ', delay
     return delay
+
+
+if __name__ == '__main__':
+    main()
+    
+    print 'Hello. Welcome to PCal interface.'
+    print 'Now tell me what you wanna do:'
+    print 'press p if uou want to plot phase/amplitude from time graphics and probably see the signal;'
+    print 'press d if you want to plot tilt angle and STD graphics and see phase-frequency response.'
+    what = raw_input()
+
+    if what == 'd':
+        pcal_delay(ifile, ntones, itype, dbg)
+    elif what == 'p':
+        pcal_plot(ifile, ntones, itype, dbg)
