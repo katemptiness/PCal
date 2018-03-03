@@ -3,8 +3,9 @@ import cmath, math
 import getopt, sys
 import matplotlib.pyplot as plt
 import os
+from itertools import count, izip
 
-ch = 0
+#ch = 0
 
 def main():
     global itype, dbg, ntones, ifile
@@ -17,7 +18,6 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:', ['ifile=', 'ntones=', 'itype=', 'dbg='])
     except getopt.GetoptError:
-        print 'Looks like something went wrong. \n'
         usage()
         sys.exit(2)
     for opt, arg in opts:
@@ -48,10 +48,17 @@ def main():
     
 def usage():
     print 'Hello, this is the USAGE function.'
-    print 'Use this form to make the program work correctly: -f <the path to the ifile> -n <tone numbers> -t <phase / amplitude> -d <false / true>.'
-    print 'For example: pcal_read("-f W:/Files/My_File", "-n 1 : 20, 40, 25, 300 : 408", "-t phase", "-d true")'
     print
-    print '-n, -t & -d parameters are: -1 : 512, -phase & -false as default, so you can use: delay = PCal.pcal_delay(["-f My_File"]).'
+    print 'You can use this forms to work:'
+    print '-f is for path to the file;'
+    print '-n is for tone numbers;'
+    print '-t is for data type (amplitudes or phases);'
+    print '-d is for graphics display mode (true or false).'
+    print
+    print 'For example:'
+    print 'python PCal.py -f W:/Files/My_File -n "1 : 512" -t phase - d true'
+    print
+    print '-n, -t & -d parameters are "1 : 512", "phase" & "false" as default, so you can only use -f.'
 
 
 def unwraping(lista):
@@ -117,16 +124,25 @@ def unwraping(lista):
 def unwraping2(lista):
     i = 0
     while i < (len(lista) - 1):
-        if abs(lista[i + 1] - lista[i]) > 180:
+        r = lista[i + 1] - lista[i]
+        if abs(r) > 180 and lista[i + 1] < lista[i]:
             lista[i + 1] = lista[i + 1] + 180
-
-        j = i + 1
-        while j < len(lista):
-            lista[j] = lista[j] + 180
-            j = j + 1
-            
-        i = i + 1
         
+            j = i
+            while j < len(lista):
+                lista[j] = lista[j] + 180
+                j = j + 1
+            
+        elif abs(r) > 180 and lista[i + 1] > lista[i]:
+            lista[i + 1] = lista[i + 1] - 180
+        
+            j = i
+            while j < len(lista):
+                lista[j] = lista[j] - 180
+                j = j + 1
+    
+        i = i + 1
+
     return lista
 
 
@@ -260,19 +276,28 @@ def pcal_plot(ifile, ntones, itype, dbg):
     
         condition = raw_input('Plot the signal (y/n)? ')
         if condition == 'y':
+            ph_s = []
+
             time = np.linspace(0, 1e-6, counter)
             j = 0
             while j < acc_periods:
                 ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
                 j = j + 1
                 plt.plot(time, ph1)
+
+                number = max(izip(ph1, count()))[1]                
             
             plt.grid()
             plt.xlabel('time')
             plt.ylabel('amplitude')
             plt.show()
 
+        
+        fft_delay = (0.000001 / counter) * number
 
+        print 'Time delay is probably', fft_delay
+
+        
 def pcal_trend(ifile, ntones, itype, dbg):
     global trends
 
@@ -369,7 +394,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
     
     li = []
     
-    std_threshold = 5 * min(std)
+    std_threshold = 4 * min(std)
 
     good_table = []
     good_ntones = []
@@ -418,8 +443,10 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         delay = (a * (np.pi / 180)) / b
         
-    print 'The time delay is ', delay
-    return delay
+    if __name__ == '__main__':
+        print 'The time delay is ', delay
+    else:
+        return delay
 
 
 if __name__ == '__main__':
