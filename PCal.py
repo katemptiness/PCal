@@ -54,6 +54,82 @@ def usage():
     print '-n, -t & -d parameters are: -1 : 512, -phase & -false as default, so you can use: delay = PCal.pcal_delay(["-f My_File"]).'
 
 
+def unwraping(lista):
+    if np.std(lista) > 70:
+
+        list1 = []
+        list2 = []
+        
+        i = 0
+        while i < len(lista):
+            if lista[i] == abs(lista[i]):
+                if lista[i] > np.mean(lista):
+                    list1.append(i)
+                else:
+                    list2.append(i)
+            elif lista[i] == -abs(lista[i]):
+                if lista[i] < np.mean(lista):
+                    list2.append(i)
+                else:
+                    list1.append(i)
+            i = i + 1
+    
+        if len(list1) > len(list2):
+            c = '+'
+        elif len(list1) < len(list2):
+            c = '-'
+        elif len(list1) == len(list2):
+            if lista[0] >= 0:
+                c = '+'
+            elif lista[0] < 0:
+                c = '-'
+    
+        if c == '+':
+            i = 0
+            while i < (len(lista) - 1):
+                if (lista[i + 1] - lista[i]) < -180:
+                    lista[i + 1] = lista[i + 1] + 2 * 180
+                elif (lista[i + 1] - lista[i]) > 180:
+                    lista[i] = lista[i] + 2 * 180
+                i = i + 1
+    
+        elif c == '-':
+            i = 0
+            while i < (len(lista) - 1):
+                if (lista[i + 1] - lista[i]) < -300:
+                    lista[i] = lista[i] - 2 * 180
+                elif (lista[i + 1] - lista[i]) > 300:
+                    lista[i + 1] = lista[i + 1] - 2 * 180
+                i = i + 1
+
+        if np.mean(lista) > 0:
+            if lista[0] < 0 and lista[1] < 0:
+                lista[0] = lista[0] + 2 * 180
+                lista[1] = lista[1] + 2 * 180
+        elif np.mean(lista) < 0:
+            if lista[0] > 0 and lista[1] > 0:
+                lista[0] = lista[0] - 2 * 180
+                lista[1] = lista[1] - 2 * 180
+    
+    return lista
+
+
+def unwraping2(lista):
+    i = 0
+    while i < (len(lista) - 1):
+        if abs(lista[i + 1] - lista[i]) > 180:
+            lista[i + 1] = lista[i + 1] + 180
+
+        j = i + 1
+        while j < len(lista):
+            lista[j] = lista[j] + 180
+            j = j + 1
+            
+        i = i + 1
+        
+    return lista
+
+
 def pcal_read(ifile, ntones, itype, dbg):
     global table, table2, acc_periods, counter, ph, ntones_full
     
@@ -174,7 +250,7 @@ def pcal_plot(ifile, ntones, itype, dbg):
     
         i = counter
         while i > 0:
-            plt.plot(time, (table[i - 1]))
+            plt.plot(time, unwraping(table[i - 1]))
             i = i - 1
     
         plt.grid()
@@ -208,9 +284,9 @@ def pcal_trend(ifile, ntones, itype, dbg):
     
     i = 0
     while i < counter:
-	plt.plot(time, (table[i - 1]), 'o')
+        plt.plot(time, unwraping(table[i - 1]), 'o')
         A = (np.vstack([time, np.ones(len(time))])).transpose()
-        m, c = linalg.lstsq(A, (table[i - 1]))[0]
+        m, c = linalg.lstsq(A, unwraping(table[i - 1]))[0]
         trend = m * time + c
         trends.append(trend)
         if dbg == 'true':
@@ -260,9 +336,9 @@ def pcal_retrend(ifile, ntones, itype, dbg):
         while j < acc_periods:
             re = (trends[i])[1] - (trends[i])[0]
             re_trends.append((trends[i])[j] - j * re)
-            re_table.append((table[i])[j] - j * re)
+            re_table.append(unwraping(table[i])[j] - j * re)
             j = j + 1
-        std.append(np.std((re_table)))
+        std.append(np.std(unwraping(re_table)))
 	new_table.append(re_table)
         re_table = []
         i = i + 1
@@ -293,20 +369,21 @@ def pcal_delay(ifile, ntones, itype, dbg):
     
     li = []
     
-    std_threshold = 2 * round(min(std))
+    std_threshold = 5 * min(std)
 
-    j = 0
     good_table = []
     good_ntones = []
+
+    j = 0
     while j < counter:
-	if itype == 'phase':
-	    if std[j] < std_threshold:
-		good_table.append(new_table[j])
-		good_ntones.append(j)
-	j = j + 1
-    
+        if itype == 'phase':
+            if std[j] < std_threshold:
+                good_table.append(new_table[j])
+                good_ntones.append(j)
+        j = j + 1
+
     good_ntones = np.asarray(good_ntones)
-    
+
     i = 0
     while i < len(good_ntones):
         j = 0
@@ -316,15 +393,13 @@ def pcal_delay(ifile, ntones, itype, dbg):
             j = j + 1
         li.append(sum / acc_periods)
         i = i + 1
-    
+
     if dbg == 'true':
-	   #plt.plot(good_ntones, np.unwrap(li))
-        plt.plot(good_ntones, li)
+	   plt.plot(good_ntones, unwraping2(li))
     
     trends = []
     
     A = (np.vstack([good_ntones, np.ones(len(good_ntones))])).transpose()
-    #m, c = linalg.lstsq(A, np.unwrap(li))[0]
     m, c = linalg.lstsq(A, li)[0]
     trend = m * good_ntones + c
     
