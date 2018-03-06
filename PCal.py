@@ -275,7 +275,6 @@ def pcal_plot(ifile, ntones, itype, dbg):
         #plt.ylabel(itype)
         #plt.show()
         
-        
         time = np.linspace(0, 1e-6, counter)
 
         j = 0
@@ -319,9 +318,6 @@ def pcal_trend(ifile, ntones, itype, dbg):
         if dbg == 'true':
             axar[0].plot(time, trend)
         i = i + 1
-    
-    #if dbg == 'true':
-        
     
     AC = len(time)
     
@@ -438,13 +434,13 @@ if __name__ == '__main__':
     main()
     
     print 'Hello. Welcome to PCal interface.'
-    print 'Now tell me what you wanna do:'
-    print 'press p if uou want to plot phase/amplitude from time graphics and probably see the signal;'
-    print 'press d if you want to plot tilt angle and STD graphics and see phase-frequency response.'
+    print 'Now tell me what you want to do:'
+    print 'press 1 if uou want to plot signal and see the time delay;'
+    print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response.'
     
     what = raw_input()
 
-    if what == 'd':
+    if what == '2':
         pcal_delay(ifile, ntones, itype, dbg)
-    elif what == 'p':
+    elif what == '1':
         pcal_plot(ifile, ntones, itype, dbg)
