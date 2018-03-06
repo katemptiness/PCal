@@ -63,7 +63,7 @@ def usage():
 
 
 def unwraping(lista):
-    if np.std(lista) > 70:
+    if np.std(lista) > 49:
 
         list1 = []
         list2 = []
@@ -403,12 +403,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
     i = 0
     while i < len(good_ntones):
-        j = 0
-        sum = 0
-        while j < acc_periods:
-            sum = sum + (good_table[i])[j]
-            j = j + 1
-        li.append(sum / acc_periods)
+        li.append(np.mean(good_table[i]))
         i = i + 1
 
     plt.plot(good_ntones, unwraping2(li))
@@ -445,6 +440,7 @@ if __name__ == '__main__':
     print 'Now tell me what you wanna do:'
     print 'press p if uou want to plot phase/amplitude from time graphics and probably see the signal;'
     print 'press d if you want to plot tilt angle and STD graphics and see phase-frequency response.'
+    
     what = raw_input()
 
     if what == 'd':
