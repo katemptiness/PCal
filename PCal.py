@@ -253,7 +253,7 @@ def pcal_read(ifile, ntones, itype, dbg):
     
 
 def pcal_plot(ifile, ntones, itype, dbg):
-    pcal_read(ifile, ntones, itype, dbg)
+    #pcal_read(ifile, ntones, itype, dbg)
     
     if itype == 'phase-amplitude':
         plt.plot(table, table2, 'o')
@@ -302,7 +302,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
 
     f, axar = plt.subplots(4)
 
-    pcal_read(ifile, ntones, itype, dbg)
+    #pcal_read(ifile, ntones, itype, dbg)
     
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
     
@@ -390,10 +390,9 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
     j = 0
     while j < counter:
-        if itype == 'phase':
-            if std[j] < std_threshold:
-                good_table.append(new_table[j])
-                good_ntones.append(j)
+        if std[j] < std_threshold:
+            good_table.append(new_table[j])
+            good_ntones.append(j)
         j = j + 1
 
     good_ntones = np.asarray(good_ntones)
@@ -415,14 +414,16 @@ def pcal_delay(ifile, ntones, itype, dbg):
         plt.plot(good_ntones, trend)
         plt.grid()
         plt.xlabel('frequency')
-        plt.ylabel(itype)
+        if itype == 'phase-amplitude':
+            plt.ylabel('phase')
+        else:
+            plt.ylabel(itype)
         plt.show()
     
-    if itype == 'phase':
-        a = abs(max(trend) - min(trend))
-        b = (counter - 1) * (10 ** 6)
+    a = abs(max(trend) - min(trend))
+    b = (counter - 1) * (10 ** 6)
 
-        delay = (a * (np.pi / 180)) / b
+    delay = (a * (np.pi / 180)) / b
         
     if __name__ == '__main__':
         print 'The time delay is ', delay
@@ -433,6 +434,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
 if __name__ == '__main__':
     main()
     
+    pcal_read(ifile, ntones, itype, dbg)
+
     print 'Hello. Welcome to PCal interface.'
     print 'Now tell me what you want to do:'
     print 'press 1 if uou want to plot signal and see the time delay;'
