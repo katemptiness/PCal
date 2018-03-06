@@ -122,29 +122,29 @@ def unwraping(lista):
     return lista
 
 
-def unwraping2(lista):
-    i = 0
-    while i < (len(lista) - 1):
-        r = lista[i + 1] - lista[i]
-        if abs(r) > 360 and lista[i + 1] < lista[i]:
-            lista[i + 1] = lista[i + 1] + 360
-            print 'hey'
+#def unwraping2(lista):
+    #i = 0
+    #while i < (len(lista) - 1):
+        #r = lista[i + 1] - lista[i]
+        #if abs(r) > 360 and lista[i + 1] < lista[i]:
+            #lista[i + 1] = lista[i + 1] + 360
+            
             #j = i
             #while j < len(lista):
                 #lista[j] = lista[j] + 360
                 #j = j + 1
             
-        elif abs(r) > 360 and lista[i + 1] > lista[i]:
-            lista[i + 1] = lista[i + 1] - 360
-            print 'hey'
+        #elif abs(r) > 360 and lista[i + 1] > lista[i]:
+            #lista[i + 1] = lista[i + 1] - 360
+            
             #j = i
             #while j < len(lista):
                 #lista[j] = lista[j] - 360
                 #j = j + 1
     
-        i = i + 1
+        #i = i + 1
 
-    return lista
+    #return lista
 
 
 def pcal_read(ifile, ntones, itype, dbg):
@@ -406,7 +406,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
         li.append(np.mean(good_table[i]))
         i = i + 1
 
-    plt.plot(good_ntones, unwraping2(li))
+    plt.plot(good_ntones, li)
     
     trends = []
     
