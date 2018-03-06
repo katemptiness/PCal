@@ -15,7 +15,6 @@ def main():
     itype = 'phase'
     dbg = 'false'
     ntones = '1 : 512'
-    what = 'plot'
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:', ['ifile=', 'ntones=', 'itype=', 'dbg='])
@@ -301,7 +300,7 @@ def pcal_plot(ifile, ntones, itype, dbg):
 
         
 def pcal_trend(ifile, ntones, itype, dbg):
-    global trends
+    global trends, std, new_table
 
     pcal_read(ifile, ntones, itype, dbg)
     
@@ -330,27 +329,6 @@ def pcal_trend(ifile, ntones, itype, dbg):
     
     alphas = []
 
-    j = 0
-    while j < counter:
-        BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
-        AB = np.sqrt(BC * BC + AC * AC)
-        alpha = np.arcsin(BC / AB) * (180 / np.pi)
-        if dbg == 'true':
-            plt.plot((ntones_full[j] + 1), alpha, 'o')
-        j = j + 1
-    
-    if dbg == 'true':
-        plt.grid()
-        plt.xlabel('tone numbers')
-        plt.ylabel('tilt angle')
-        plt.show()
-
-
-def pcal_retrend(ifile, ntones, itype, dbg):
-    global std, new_table
-    
-    pcal_trend(ifile, ntones, itype, dbg)
-    
     re_trends = []
     re_table = []
     new_table = []
@@ -371,20 +349,33 @@ def pcal_retrend(ifile, ntones, itype, dbg):
         i = i + 1
             
     if dbg == 'true':
-        f, axar = plt.subplots(2)
+        f, axar = plt.subplots(3)
         
         j = 0
         while j < counter:
-            axar[0].plot((ntones_full[j] + 1), std[j], 'o')
+            BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
+            AB = np.sqrt(BC * BC + AC * AC)
+            alpha = np.arcsin(BC / AB) * (180 / np.pi)
+            if dbg == 'true':
+                axar[0].plot((ntones_full[j] + 1), alpha, 'o')
             j = j + 1
-        
+
         axar[0].grid()
         axar[0].set_xlabel('tone numbers')
-        axar[0].set_ylabel('standard deviation')
+        axar[0].set_ylabel('tilt angle')
+
+        j = 0
+        while j < counter:
+            axar[1].plot((ntones_full[j] + 1), std[j], 'o')
+            j = j + 1
         
-        axar[1].hist(std, bins = counter)
-        axar[1].set_xlabel('standard deviation')
-        axar[1].set_ylabel('tones')
+        axar[1].grid()
+        axar[1].set_xlabel('tone numbers')
+        axar[1].set_ylabel('standard deviation')
+        
+        axar[2].hist(std, bins = counter)
+        axar[2].set_xlabel('standard deviation')
+        axar[2].set_ylabel('tones')
         
         plt.show()
 
@@ -392,7 +383,7 @@ def pcal_retrend(ifile, ntones, itype, dbg):
 def pcal_delay(ifile, ntones, itype, dbg):
     global delay
 
-    pcal_retrend(ifile, ntones, itype, dbg)
+    pcal_trend(ifile, ntones, itype, dbg)
     
     li = []
     
