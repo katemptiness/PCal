@@ -301,6 +301,8 @@ def pcal_plot(ifile, ntones, itype, dbg):
 def pcal_trend(ifile, ntones, itype, dbg):
     global trends, std, new_table
 
+    f, axar = plt.subplots(4)
+
     pcal_read(ifile, ntones, itype, dbg)
     
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
@@ -309,20 +311,17 @@ def pcal_trend(ifile, ntones, itype, dbg):
     
     i = 0
     while i < counter:
-        plt.plot(time, unwraping(table[i - 1]), 'o')
+        axar[0].plot(time, unwraping(table[i - 1]), 'o')
         A = (np.vstack([time, np.ones(len(time))])).transpose()
         m, c = linalg.lstsq(A, unwraping(table[i - 1]))[0]
         trend = m * time + c
         trends.append(trend)
         if dbg == 'true':
-            plt.plot(time, trend)
+            axar[0].plot(time, trend)
         i = i + 1
     
-    if dbg == 'true':
-        plt.grid()
-        plt.xlabel('time')
-        plt.ylabel(itype)
-        plt.show()
+    #if dbg == 'true':
+        
     
     AC = len(time)
     
@@ -348,7 +347,9 @@ def pcal_trend(ifile, ntones, itype, dbg):
         i = i + 1
             
     if dbg == 'true':
-        f, axar = plt.subplots(3)
+        axar[0].grid()
+        axar[0].set_xlabel('time')
+        axar[0].set_ylabel(itype)
         
         j = 0
         while j < counter:
@@ -356,25 +357,25 @@ def pcal_trend(ifile, ntones, itype, dbg):
             AB = np.sqrt(BC * BC + AC * AC)
             alpha = np.arcsin(BC / AB) * (180 / np.pi)
             if dbg == 'true':
-                axar[0].plot((ntones_full[j] + 1), alpha, 'o')
+                axar[1].plot((ntones_full[j] + 1), alpha, 'o')
             j = j + 1
 
-        axar[0].grid()
-        axar[0].set_xlabel('tone numbers')
-        axar[0].set_ylabel('tilt angle')
+        axar[1].grid()
+        axar[1].set_xlabel('tone numbers')
+        axar[1].set_ylabel('tilt angle')
 
         j = 0
         while j < counter:
-            axar[1].plot((ntones_full[j] + 1), std[j], 'o')
+            axar[2].plot((ntones_full[j] + 1), std[j], 'o')
             j = j + 1
         
-        axar[1].grid()
-        axar[1].set_xlabel('tone numbers')
-        axar[1].set_ylabel('standard deviation')
+        axar[2].grid()
+        axar[2].set_xlabel('tone numbers')
+        axar[2].set_ylabel('standard deviation')
         
-        axar[2].hist(std, bins = counter)
-        axar[2].set_xlabel('standard deviation')
-        axar[2].set_ylabel('tones')
+        axar[3].hist(std, bins = counter)
+        axar[3].set_xlabel('standard deviation')
+        axar[3].set_ylabel('tones')
         
         plt.show()
 
