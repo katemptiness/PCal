@@ -126,21 +126,21 @@ def unwraping2(lista):
     i = 0
     while i < (len(lista) - 1):
         r = lista[i + 1] - lista[i]
-        if abs(r) > 180 and lista[i + 1] < lista[i]:
-            lista[i + 1] = lista[i + 1] + 180
-        
-            j = i
-            while j < len(lista):
-                lista[j] = lista[j] + 180
-                j = j + 1
+        if abs(r) > 360 and lista[i + 1] < lista[i]:
+            lista[i + 1] = lista[i + 1] + 360
+            print 'hey'
+            #j = i
+            #while j < len(lista):
+                #lista[j] = lista[j] + 360
+                #j = j + 1
             
-        elif abs(r) > 180 and lista[i + 1] > lista[i]:
-            lista[i + 1] = lista[i + 1] - 180
-        
-            j = i
-            while j < len(lista):
-                lista[j] = lista[j] - 180
-                j = j + 1
+        elif abs(r) > 360 and lista[i + 1] > lista[i]:
+            lista[i + 1] = lista[i + 1] - 360
+            print 'hey'
+            #j = i
+            #while j < len(lista):
+                #lista[j] = lista[j] - 360
+                #j = j + 1
     
         i = i + 1
 
@@ -263,40 +263,39 @@ def pcal_plot(ifile, ntones, itype, dbg):
         plt.show()
     
     else:
-        time = np.linspace(0, 0.5 * acc_periods, acc_periods)
-    
-        i = counter
-        while i > 0:
-            plt.plot(time, unwraping(table[i - 1]))
-            i = i - 1
-    
-        plt.grid()
-        plt.xlabel('time')
-        plt.ylabel(itype)
-        plt.show()
-    
-        condition = raw_input('Plot the signal (y/n)? ')
-        if condition == 'y':
-            ph_s = []
+        #time = np.linspace(0, 0.5 * acc_periods, acc_periods)
+        
+        #i = counter
+        #while i > 0:
+            #plt.plot(time, unwraping(table[i - 1]))
+            #i = i - 1
+        
+        #plt.grid()
+        #plt.xlabel('time')
+        #plt.ylabel(itype)
+        #plt.show()
+        
+        
+        time = np.linspace(0, 1e-6, counter)
 
-            time = np.linspace(0, 1e-6, counter)
-            j = 0
-            while j < acc_periods:
-                ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
-                j = j + 1
-                plt.plot(time, ph1)
+        j = 0
+        while j < acc_periods:
+            ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
+            j = j + 1
+            plt.plot(time, ph1)
 
-                number = max(izip(ph1, count()))[1]                
-            
+            number = max(izip(ph1, count()))[1]                
+        
+        if dbg == 'true':    
             plt.grid()
             plt.xlabel('time')
             plt.ylabel('amplitude')
             plt.show()
 
         
-            fft_delay = (0.000001 / counter) * number
+        fft_delay = (0.000001 / counter) * number
 
-            print 'Time delay is probably', fft_delay
+        print 'Time delay is probably', fft_delay
 
         
 def pcal_trend(ifile, ntones, itype, dbg):
