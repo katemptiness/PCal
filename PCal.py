@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np, numpy.fft as fft, numpy.linalg as linalg
 import cmath, math
 import getopt, sys
@@ -293,9 +295,9 @@ def pcal_plot(ifile, ntones, itype, dbg):
             plt.show()
 
         
-        fft_delay = (0.000001 / counter) * number
+            fft_delay = (0.000001 / counter) * number
 
-        print 'Time delay is probably', fft_delay
+            print 'Time delay is probably', fft_delay
 
         
 def pcal_trend(ifile, ntones, itype, dbg):
@@ -419,8 +421,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
         li.append(sum / acc_periods)
         i = i + 1
 
-    if dbg == 'true':
-	   plt.plot(good_ntones, unwraping2(li))
+    plt.plot(good_ntones, unwraping2(li))
     
     trends = []
     
@@ -430,8 +431,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
     
     if dbg == 'true':
         plt.plot(good_ntones, trend)
-
-    if dbg == 'true':
         plt.grid()
         plt.xlabel('frequency')
         plt.ylabel(itype)
