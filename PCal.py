@@ -122,29 +122,29 @@ def unwraping(lista):
     return lista
 
 
-#def unwraping2(lista):
-    #i = 0
-    #while i < (len(lista) - 1):
-        #r = lista[i + 1] - lista[i]
-        #if abs(r) > 360 and lista[i + 1] < lista[i]:
-            #lista[i + 1] = lista[i + 1] + 360
+def unwraping2(lista):
+    i = 0
+    while i < (len(lista) - 1):
+        r = lista[i + 1] - lista[i]
+        if abs(r) > 360 and lista[i + 1] < lista[i]:
+            lista[i + 1] = lista[i + 1] + 360
             
-            #j = i
-            #while j < len(lista):
-                #lista[j] = lista[j] + 360
-                #j = j + 1
+            j = i
+            while j < len(lista):
+                lista[j] = lista[j] + 360
+                j = j + 1
             
-        #elif abs(r) > 360 and lista[i + 1] > lista[i]:
-            #lista[i + 1] = lista[i + 1] - 360
+        elif abs(r) > 360 and lista[i + 1] > lista[i]:
+            lista[i + 1] = lista[i + 1] - 360
             
-            #j = i
-            #while j < len(lista):
-                #lista[j] = lista[j] - 360
-                #j = j + 1
+            j = i
+            while j < len(lista):
+                lista[j] = lista[j] - 360
+                j = j + 1
     
-        #i = i + 1
+        i = i + 1
 
-    #return lista
+    return lista
 
 
 def pcal_read(ifile, ntones, itype, dbg):
@@ -253,8 +253,6 @@ def pcal_read(ifile, ntones, itype, dbg):
     
 
 def pcal_plot(ifile, ntones, itype, dbg):
-    #pcal_read(ifile, ntones, itype, dbg)
-    
     if itype == 'phase-amplitude':
         plt.plot(table, table2, 'o')
         plt.grid()
@@ -302,8 +300,6 @@ def pcal_trend(ifile, ntones, itype, dbg):
 
     f, axar = plt.subplots(4)
 
-    #pcal_read(ifile, ntones, itype, dbg)
-    
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
     
     trends = []
@@ -402,7 +398,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
         li.append(np.mean(good_table[i]))
         i = i + 1
 
-    plt.plot(good_ntones, li)
+    plt.plot(good_ntones, unwraping2(li))
+    plt.plot(good_ntones, unwraping2(li), 'o')
     
     trends = []
     
