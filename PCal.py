@@ -147,6 +147,128 @@ def unwraping2(lista):
     return lista
 
 
+def SetIndex0(i, N, iPow):
+    i0 = i
+    
+    bb = []
+    
+    kk = 0
+    while kk < 32:
+        bb.append('')
+        kk = kk + 1
+    
+    j = 0
+    while j < iPow:
+        bb.append(False)
+        j = j + 1
+
+    j = N
+    k = iPow
+    l = 0
+    m = 0
+
+    while i >= 1:
+        bb[k] = i >= j
+        if bb[k]:
+            i = i - j
+            l = l + m
+        j = j / 2
+        k = k - 1
+        if m == 0:
+            m = 1
+        else:
+            m = m * 2
+
+    return l
+
+
+def Fraq_FFT(N, Re0, Im0, Tau, bInv):
+    Re1 = Im1 = 0
+    iPow = 0
+    
+    i = 1
+    while i < N:
+        iPow = iPow + 1
+        i = i * 2
+    
+    if i > N:
+        return
+    
+    acos = []
+    asin = []
+    
+    kk = 0
+    while kk < iPow:
+        acos.append('')
+        asin.append('')
+        kk = kk + 1
+    
+    Re = []
+    Im = []
+    
+    kk = 0
+    while kk < 2 * N:
+        Re.append('')
+        Im.append('')
+        kk = kk + 1
+    
+    I = []
+    
+    kk = 0
+    while kk < N:
+        I.append('')
+        kk = kk + 1
+    
+    try:
+        j = 0
+        while j < N:
+            I[j] = SetIndex0(j, N, iPow)
+            j = j + 1
+        
+        a = np.pi * Tau
+        
+        if bInv == 0:
+            a = a * (-1)
+        
+        i = 0
+        while i < iPow:
+            acos[i] = np.cos(a)
+            asin[i] = np.sin(a)
+            a = a / 2
+            i = i + 1
+        
+        j = 0
+        while j < N:
+            j1 = I[j]
+            Re[j1] = Re0[j]
+            Im[j1] = Im0[j]
+            j = j + 1
+        
+        k = 2
+        
+        l = 0
+        while l < iPow:
+            j = 0
+            while j < N:
+                j1 = j + k / 2
+                Re[j] = Re[j] + Re[j1] * acos[l] - Im[j1] * asin[l]
+                Im[j] = Im[j] + Re[j1] * acos[l] + Im[j1] * asin[l]
+                j = j + k
+            k = k * 2
+            l = l + 1
+        
+        Re1 = Re[0] / N
+        Im1 = Im[0] / N
+        
+        del Re, Im, acos, asin, I
+        return Im1, Re1
+    
+    except:
+        del Re, Im, acos, asin, I
+        
+        return Im1, Re1
+
+
 def pcal_read(ifile, ntones, itype, dbg):
     global table, table2, acc_periods, counter, ph, ntones_full
     
@@ -243,7 +365,7 @@ def pcal_read(ifile, ntones, itype, dbg):
             ph.append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
             i = i + 1
         j = j + 1
-        
+    
     ifile.close()
 
     if itype == 'phase-amplitude':
@@ -281,7 +403,7 @@ def pcal_plot(ifile, ntones, itype, dbg):
             j = j + 1
             plt.plot(time, ph1)
 
-            number = max(izip(ph1, count()))[1]                
+            number = max(izip(ph1, count()))[1]
         
         if dbg == 'true':    
             plt.grid()
@@ -294,7 +416,18 @@ def pcal_plot(ifile, ntones, itype, dbg):
 
         print 'Time delay is probably', fft_delay
 
-        
+        re = []
+        im = []
+
+        i = 0
+        while i < len(ph):
+            re.append(abs(ph[i]))
+            im.append(cmath.phase(ph[i]))
+            i = i + 1
+
+        im, re = Fraq_FFT(counter, re, im, fft_delay, 0)
+
+
 def pcal_trend(ifile, ntones, itype, dbg):
     global trends, std, new_table
 
@@ -444,3 +577,5 @@ if __name__ == '__main__':
         pcal_delay(ifile, ntones, itype, dbg)
     elif what == '1':
         pcal_plot(ifile, ntones, itype, dbg)
+    else:
+        print 'Error, please try again.'
