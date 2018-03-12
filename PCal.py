@@ -252,7 +252,7 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
             while j < N:
                 j1 = j + k / 2
                 Re[j] = Re[j] + Re[j1] * acos[l] - Im[j1] * asin[l]
-                Im[j] = Im[j] + Re[j1] * acos[l] + Im[j1] * asin[l]
+                Im[j] = Im[j] + Re[j1] * asin[l] + Im[j1] * acos[l]
                 j = j + k
             k = k * 2
             l = l + 1
