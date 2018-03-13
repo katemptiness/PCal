@@ -270,7 +270,7 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
 
 
 def pcal_read(ifile, ntones, itype, dbg):
-    global table, table2, acc_periods, counter, ph, ntones_full
+    global table, table2, acc_periods, counter, ph, ntones_full, Im0, Re0
     
     #if ifile[:5] == 'files':
         #import delays_difs
@@ -346,6 +346,8 @@ def pcal_read(ifile, ntones, itype, dbg):
 
     table = (np.empty((counter, 0))).tolist()
     ph = []
+    Re0 = []
+    Im0 = []
 
     table = (np.empty((counter, 0))).tolist()
     table2 = (np.empty((counter, 0))).tolist()
@@ -363,6 +365,8 @@ def pcal_read(ifile, ntones, itype, dbg):
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
                 table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
+            Re0.append(float(smh[2 + int(ntones_full[i]) * 4]))
+            Im0.append(float(smh[3 + int(ntones_full[i]) * 4]))
             i = i + 1
         j = j + 1
     
@@ -411,21 +415,36 @@ def pcal_plot(ifile, ntones, itype, dbg):
             plt.ylabel('amplitude')
             plt.show()
 
-        
-        fft_delay = (0.000001 / counter) * number
+        j0 = (0.000001 / counter) * number
+        print 'The time delay is probably', j0
 
-        print 'Time delay is probably', fft_delay
+        tau_min = j0 - 3
+        tau_max = j0 + 3
 
-        re = []
-        im = []
+        delta_tau = 0.1
 
-        i = 0
-        while i < len(ph):
-            re.append(abs(ph[i]))
-            im.append(cmath.phase(ph[i]))
-            i = i + 1
+        while delta_tau >= 1e-3:
+            tau = tau_min
+            tau_list = []
 
-        im, re = Fraq_FFT(counter, re, im, fft_delay, 0)
+            while tau <= tau_max:
+                im, re = Fraq_FFT(counter, Re0[0 : counter], Im0[0 : counter], tau, 0)
+                
+                c_j = cmath.phase(complex(re, im))
+                tau = tau + delta_tau
+                tau_list.append(tau)
+
+            k = 0
+            while k < len(tau_list):
+                tau_list[k] = abs(tau_list[k])
+                k = k + 1
+            tau = min(tau_list)
+
+            tau_min = tau - delta_tau * 2
+            tau_max = tau + delta_tau * 2
+            delta_tau = delta_tau / 10
+
+        print 'And the clarified time delay is', tau
 
 
 def pcal_trend(ifile, ntones, itype, dbg):
