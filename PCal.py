@@ -378,7 +378,7 @@ def pcal_read(ifile, ntones, itype, dbg):
         return table
     
 
-def pcal_plot(ifile, ntones, itype, dbg):
+def pcal_delay(ifile, ntones, itype, dbg):
     if itype == 'phase-amplitude':
         plt.plot(table, table2, 'o')
         plt.grid()
@@ -409,7 +409,7 @@ def pcal_plot(ifile, ntones, itype, dbg):
 
             number = max(izip(ph1, count()))[1]
         
-        if dbg == 'true':    
+        if dbg == 'true':
             plt.grid()
             plt.xlabel('time')
             plt.ylabel('amplitude')
@@ -418,32 +418,42 @@ def pcal_plot(ifile, ntones, itype, dbg):
         j0 = (0.000001 / counter) * number
         print 'The time delay is probably', j0
 
-        tau_min = j0 - 3
-        tau_max = j0 + 3
+        tau_min = j0 - 1
+        tau_max = j0 + 1
 
         delta_tau = 0.1
-
         while delta_tau >= 1e-3:
             tau = tau_min
+            
             tau_list = []
-
+            cj = []
+            
             while tau <= tau_max:
-                im, re = Fraq_FFT(counter, Re0[0 : counter], Im0[0 : counter], tau, 0)
+                im, re = Fraq_FFT(512, Re0[:512], Im0[:512], tau, 0)
+                cj.append(complex(re, im))
                 
-                c_j = cmath.phase(complex(re, im))
-                tau = tau + delta_tau
                 tau_list.append(tau)
+                tau = tau + delta_tau
+                
+            cj = abs(np.asarray(cj))
 
-            k = 0
-            while k < len(tau_list):
-                tau_list[k] = abs(tau_list[k])
-                k = k + 1
-            tau = min(tau_list)
+            plt.cla()
+            plt.plot(tau_list, cj)
+            plt.show()
+
+            number = max(izip(cj, count()))[1]
+            tau = tau_list[number]
+            
+            #k = 0
+            #while k < len(tau_list):
+                #tau_list[k] = abs(tau_list[k])
+                #k = k + 1
+            #tau = min(tau_list)
 
             tau_min = tau - delta_tau * 2
             tau_max = tau + delta_tau * 2
             delta_tau = delta_tau / 10
-
+        
         print 'And the clarified time delay is', tau
 
 
@@ -524,7 +534,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         plt.show()
 
 
-def pcal_delay(ifile, ntones, itype, dbg):
+def pcal_phaseresponse(ifile, ntones, itype, dbg):
     global delay
 
     pcal_trend(ifile, ntones, itype, dbg)
@@ -593,8 +603,8 @@ if __name__ == '__main__':
     what = raw_input()
 
     if what == '2':
-        pcal_delay(ifile, ntones, itype, dbg)
+        pcal_phaseresponse(ifile, ntones, itype, dbg)
     elif what == '1':
-        pcal_plot(ifile, ntones, itype, dbg)
+        pcal_delay(ifile, ntones, itype, dbg)
     else:
         print 'Error, please try again.'
