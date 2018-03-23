@@ -386,19 +386,22 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         f, axar = plt.subplots(2)
 
-        time = np.linspace(0, 1e-6, counter)
+        #time = np.linspace(0, 1, 512)
 
         j = 0
         while j < acc_periods:
-            ph1 = abs(fft.ifft(ph[(j * (counter - 1)) : (j * (counter - 1) + counter)]))
-            j = j + 1
-            axar[0].plot(time, ph1)
+            ph1 = abs(fft.ifft(ph[(j * counter ) : (j * counter + counter)]))
+            #axar[0].plot(time, ph1)
+            axar[0].plot(ph1)
 
             number = max(izip(ph1, count()))[1]
 
             j0 = number
-            
 
+            if j == 0:
+                #print 'The time delay is probably', ((j0 * 1e-6) / 512), 'microseconds'
+                print 'The time delay is probably', j0
+            
             tau_min = j0 - 1
             tau_max = j0 + 1
 
@@ -410,14 +413,14 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 cj = []
             
                 while tau <= tau_max:
-                    im, re = Fraq_FFT(512, (np.asarray(ph).real)[j * counter : j * counter + 512], (np.asarray(ph).imag)[j * counter : j * counter + 512], tau, 0)
+                    im, re = Fraq_FFT(512, (np.asarray(ph).real)[(j * 512) : (j * 512 + 512)], (np.asarray(ph).imag)[(j * 512) : (j * 512 + 512)], tau, 0)
                 
                     cj.append(complex(re, im))
                     tau_list.append(tau)
-                
+
                     tau = tau + delta_tau
                 
-                cj = 512 * abs(np.asarray(cj))
+                cj = abs(np.asarray(cj))
 
                 number = max(izip(cj, count()))[1]
                 tau = tau_list[number]
@@ -426,20 +429,28 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 tau_max = tau + delta_tau * 2
                 delta_tau = delta_tau / 10
         
-            tau = tau / 512
-            tau = float("%.6f" % (tau))
+            #tau = tau / 512
+            #tau = float("%.6f" % (tau))
+
+            print tau
+
             li.append(tau)
+
+            j = j + 1
+
+        #print new_li[-1]
 
         tau = "%.6f" % (np.mean(li))
 
-        print 'The time delay is', tau, 'microseconds'
+        #print 'And the clarified time delay is', tau, 'microseconds'
+        print 'And the clarified time delay is', tau
 
         if dbg == 'true':
             axar[0].grid()
             axar[0].set_xlabel('time')
             axar[0].set_ylabel('amplitude')
 
-            xlist = np.linspace(1, acc_periods, 20)
+            xlist = np.linspace(1, acc_periods, acc_periods)
             axar[1].cla()
             axar[1].plot(xlist, li)
             axar[1].plot(xlist, li, 'o')
