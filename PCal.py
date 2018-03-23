@@ -9,12 +9,25 @@ from itertools import count, izip
 
 #ch = 0
 
-def main():
-    global itype, dbg, ntones, ifile
+def file_read(ifile):
+    ifile = open(ifile)
 
+    i = 0
+    while i < 5:
+        ifile.readline()
+        i = i + 1
+
+    counter = int((str(ifile.readline()).split())[5])
+
+    return counter
+
+
+def main():
+    global itype, dbg, ntones, ifile, n
+
+    ntones = '1 : 512'
     itype = 'phase'
     dbg = 'false'
-    ntones = '1 : 512'
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:', ['ifile=', 'ntones=', 'itype=', 'dbg='])
@@ -390,7 +403,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         j = 0
         while j < acc_periods:
-            ph1 = abs(fft.ifft(ph[(j * counter ) : (j * counter + counter)]))
+            ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
             #axar[0].plot(time, ph1)
             axar[0].plot(ph1)
 
@@ -413,7 +426,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 cj = []
             
                 while tau <= tau_max:
-                    im, re = Fraq_FFT(512, (np.asarray(ph).real)[(j * 512) : (j * 512 + 512)], (np.asarray(ph).imag)[(j * 512) : (j * 512 + 512)], tau, 0)
+                    im, re = Fraq_FFT(file_read(ifile), (np.asarray(ph).real)[(j * counter) : (j * counter + counter)], (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)], tau, 0)
                 
                     cj.append(complex(re, im))
                     tau_list.append(tau)
