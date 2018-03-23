@@ -22,7 +22,7 @@ def main():
         usage()
         sys.exit(2)
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in ('-h', '--help'):
             usage()
             sys.exit()
         elif opt in ('-f', '--ifile'):
@@ -270,7 +270,7 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
 
 
 def pcal_read(ifile, ntones, itype, dbg):
-    global table, table2, acc_periods, counter, ph, ntones_full, Im0, Re0
+    global table, table2, acc_periods, counter, ph, ntones_full
     
     #if ifile[:5] == 'files':
         #import delays_difs
@@ -346,10 +346,7 @@ def pcal_read(ifile, ntones, itype, dbg):
 
     table = (np.empty((counter, 0))).tolist()
     ph = []
-    Re0 = []
-    Im0 = []
 
-    table = (np.empty((counter, 0))).tolist()
     table2 = (np.empty((counter, 0))).tolist()
     
     j = 0
@@ -365,8 +362,6 @@ def pcal_read(ifile, ntones, itype, dbg):
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
                 table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
-            Re0.append(float(smh[2 + int(ntones_full[i]) * 4]))
-            Im0.append(float(smh[3 + int(ntones_full[i]) * 4]))
             i = i + 1
         j = j + 1
     
@@ -387,18 +382,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
         plt.show()
     
     else:
-        #time = np.linspace(0, 0.5 * acc_periods, acc_periods)
-        
-        #i = counter
-        #while i > 0:
-            #plt.plot(time, unwraping(table[i - 1]))
-            #i = i - 1
-        
-        #plt.grid()
-        #plt.xlabel('time')
-        #plt.ylabel(itype)
-        #plt.show()
-        
         time = np.linspace(0, 1e-6, counter)
 
         j = 0
@@ -415,8 +398,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
             plt.ylabel('amplitude')
             plt.show()
 
-        j0 = (0.000001 / counter) * number
-        print 'The time delay is probably', j0
+        j0 = number
+        print 'The time delay is probably', ((1e-6 / counter) * number)
 
         tau_min = j0 - 1
         tau_max = j0 + 1
@@ -429,31 +412,25 @@ def pcal_delay(ifile, ntones, itype, dbg):
             cj = []
             
             while tau <= tau_max:
-                im, re = Fraq_FFT(512, Re0[:512], Im0[:512], tau, 0)
-                cj.append(complex(re, im))
+                im, re = Fraq_FFT(512, (np.asarray(ph).real)[:512], (np.asarray(ph).imag)[:512], tau, 0)
                 
+                cj.append(complex(re, im))
                 tau_list.append(tau)
+                
                 tau = tau + delta_tau
                 
-            cj = abs(np.asarray(cj))
-
-            plt.cla()
-            plt.plot(tau_list, cj)
-            plt.show()
+            cj = 512 * abs(np.asarray(cj))
 
             number = max(izip(cj, count()))[1]
             tau = tau_list[number]
-            
-            #k = 0
-            #while k < len(tau_list):
-                #tau_list[k] = abs(tau_list[k])
-                #k = k + 1
-            #tau = min(tau_list)
 
             tau_min = tau - delta_tau * 2
             tau_max = tau + delta_tau * 2
             delta_tau = delta_tau / 10
         
+        tau = tau / 512
+        tau = "%.6f" % (tau)
+
         print 'And the clarified time delay is', tau
 
 
