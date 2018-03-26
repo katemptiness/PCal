@@ -571,7 +571,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
             j0 = number
 
             if j == 0:
-                print 'The time delay is probably', ((j0 * 1e-6) / 512), 'microseconds'
+                j1 = ("%.6f" % (((j0 * 1e-6) / 512) * 1e6))
+                print 'The time delay is probably', j1, 'microseconds'
             
             tau_min = j0 - 1
             tau_max = j0 + 1
