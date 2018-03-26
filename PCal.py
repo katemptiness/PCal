@@ -572,7 +572,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
             if j == 0:
                 j1 = ("%.6f" % (((j0 * 1e-6) / 512) * 1e6))
-                print 'The time delay is probably', j1, 'microseconds'
+                print 'The time delay is probably', j1, 'microseconds \n'
+                print 'Starting the calculation...'
             
             tau_min = j0 - 1
             tau_max = j0 + 1
@@ -604,7 +605,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
             tau = tau / 512
             tau = float("%.6f" % (tau))
 
-            print tau
+            sys.stdout.write(('=' * (j + 1)) + ('' * (acc_periods - j)) + ("\r[%d"%(j + 1) + '/' + str(acc_periods) + "] "))
+            sys.stdout.flush()
 
             li.append(tau)
 
@@ -612,7 +614,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         tau = "%.6f" % (np.mean(li))
 
-        print 'And the clarified time delay is', tau, 'microseconds'
+        print
+        print '\nAnd the clarified time delay is', tau, 'microseconds'
         
         if dbg == 'true':
             axar[0].grid()
