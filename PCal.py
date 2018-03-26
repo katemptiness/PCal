@@ -553,8 +553,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 ph_new.append((ph_table_new[j])[i])
                 i = i + 1
             j = j + 1
-
-        #ph = ph_new
         #############################################################
 
         li = []
