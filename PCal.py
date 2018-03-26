@@ -283,7 +283,7 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
 
 
 def pcal_read(ifile, ntones, itype, dbg):
-    global table, table2, acc_periods, counter, ph, ntones_full
+    global table, table2, acc_periods, counter, ph, ntones_full, ph_table
     
     #if ifile[:5] == 'files':
         #import delays_difs
@@ -358,9 +358,10 @@ def pcal_read(ifile, ntones, itype, dbg):
         k = k + 1
 
     table = (np.empty((counter, 0))).tolist()
-    ph = []
-
     table2 = (np.empty((counter, 0))).tolist()
+    ph_table = (np.empty((counter, 0))).tolist()
+
+    ph = []
     
     j = 0
     while j < acc_periods:
@@ -375,6 +376,7 @@ def pcal_read(ifile, ntones, itype, dbg):
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
                 table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
+            ph_table[i].append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
             i = i + 1
         j = j + 1
     
@@ -382,102 +384,15 @@ def pcal_read(ifile, ntones, itype, dbg):
 
     if itype == 'phase-amplitude':
         return 
-    else: 
+    else:
         return table
     
-
-def pcal_delay(ifile, ntones, itype, dbg):
-    if itype == 'phase-amplitude':
-        plt.plot(table, table2, 'o')
-        plt.grid()
-        plt.xlabel('phase')
-        plt.ylabel('amplitude')
-        plt.show()
-    
-    else:
-        li = []
-
-        f, axar = plt.subplots(2)
-
-        #time = np.linspace(0, 1, 512)
-
-        j = 0
-        while j < acc_periods:
-            ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
-            #axar[0].plot(time, ph1)
-            axar[0].plot(ph1)
-
-            number = max(izip(ph1, count()))[1]
-
-            j0 = number
-
-            if j == 0:
-                #print 'The time delay is probably', ((j0 * 1e-6) / 512), 'microseconds'
-                print 'The time delay is probably', j0
-            
-            tau_min = j0 - 1
-            tau_max = j0 + 1
-
-            delta_tau = 0.1
-            while delta_tau >= 1e-3:
-                tau = tau_min
-            
-                tau_list = []
-                cj = []
-            
-                while tau <= tau_max:
-                    im, re = Fraq_FFT(file_read(ifile), (np.asarray(ph).real)[(j * counter) : (j * counter + counter)], (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)], tau, 0)
-                
-                    cj.append(complex(re, im))
-                    tau_list.append(tau)
-
-                    tau = tau + delta_tau
-                
-                cj = abs(np.asarray(cj))
-
-                number = max(izip(cj, count()))[1]
-                tau = tau_list[number]
-
-                tau_min = tau - delta_tau * 2
-                tau_max = tau + delta_tau * 2
-                delta_tau = delta_tau / 10
-        
-            #tau = tau / 512
-            #tau = float("%.6f" % (tau))
-
-            print tau
-
-            li.append(tau)
-
-            j = j + 1
-
-        #print new_li[-1]
-
-        tau = "%.6f" % (np.mean(li))
-
-        #print 'And the clarified time delay is', tau, 'microseconds'
-        print 'And the clarified time delay is', tau
-
-        if dbg == 'true':
-            axar[0].grid()
-            axar[0].set_xlabel('time')
-            axar[0].set_ylabel('amplitude')
-
-            xlist = np.linspace(1, acc_periods, acc_periods)
-            axar[1].cla()
-            axar[1].plot(xlist, li)
-            axar[1].plot(xlist, li, 'o')
-            axar[1].grid()
-            axar[1].set_xlabel('accumulation periods')
-            axar[1].set_ylabel('time delay')
-
-            plt.show()
-
 
 def pcal_trend(ifile, ntones, itype, dbg):
     global trends, std, new_table
 
-    f, axar = plt.subplots(4)
+    if dbg == 'true' and what == '2':
+        f, axar = plt.subplots(4)
 
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
     
@@ -485,12 +400,13 @@ def pcal_trend(ifile, ntones, itype, dbg):
     
     i = 0
     while i < counter:
-        axar[0].plot(time, unwraping(table[i - 1]), 'o')
+        if dbg == 'true' and what == '2':
+            axar[0].plot(time, unwraping(table[i - 1]), 'o')
         A = (np.vstack([time, np.ones(len(time))])).transpose()
         m, c = linalg.lstsq(A, unwraping(table[i - 1]))[0]
         trend = m * time + c
         trends.append(trend)
-        if dbg == 'true':
+        if dbg == 'true' and what == '2':
             axar[0].plot(time, trend)
         i = i + 1
     
@@ -517,7 +433,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         re_table = []
         i = i + 1
             
-    if dbg == 'true':
+    if dbg == 'true' and what == '2':
         axar[0].grid()
         axar[0].set_xlabel('time')
         axar[0].set_ylabel(itype)
@@ -527,8 +443,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
             BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
             AB = np.sqrt(BC * BC + AC * AC)
             alpha = np.arcsin(BC / AB) * (180 / np.pi)
-            if dbg == 'true':
-                axar[1].plot((ntones_full[j] + 1), alpha, 'o')
+            axar[1].plot((ntones_full[j] + 1), alpha, 'o')
             j = j + 1
 
         axar[1].grid()
@@ -572,51 +487,161 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
 
     good_ntones = np.asarray(good_ntones)
 
-    i = 0
-    while i < len(good_ntones):
-        li.append(np.mean(good_table[i]))
-        i = i + 1
+    if what == '2':
+        i = 0
+        while i < len(good_ntones):
+            li.append(np.mean(good_table[i]))
+            i = i + 1
 
-    plt.plot(good_ntones, unwraping2(li))
-    plt.plot(good_ntones, unwraping2(li), 'o')
+        plt.plot(good_ntones, unwraping2(li))
+        plt.plot(good_ntones, unwraping2(li), 'o')
     
-    trends = []
+        trends = []
     
-    A = (np.vstack([good_ntones, np.ones(len(good_ntones))])).transpose()
-    m, c = linalg.lstsq(A, li)[0]
-    trend = m * good_ntones + c
+        A = (np.vstack([good_ntones, np.ones(len(good_ntones))])).transpose()
+        m, c = linalg.lstsq(A, li)[0]
+        trend = m * good_ntones + c
     
-    if dbg == 'true':
-        plt.plot(good_ntones, trend)
+        if dbg == 'true':
+            plt.plot(good_ntones, trend)
+            plt.grid()
+            plt.xlabel('frequency')
+            if itype == 'phase-amplitude':
+                plt.ylabel('phase')
+            else:
+                plt.ylabel(itype)
+            plt.show()
+    
+    #a = abs(max(trend) - min(trend))
+    #b = (counter - 1) * (10 ** 6)
+
+    #delay = (a * (np.pi / 180)) / b
+        
+    #if __name__ == '__main__':
+        #print 'The time delay is ', delay
+    #else:
+        #return delay
+
+    return good_ntones
+
+
+def pcal_delay(ifile, ntones, itype, dbg):
+    if itype == 'phase-amplitude':
+        plt.plot(table, table2, 'o')
         plt.grid()
-        plt.xlabel('frequency')
-        if itype == 'phase-amplitude':
-            plt.ylabel('phase')
-        else:
-            plt.ylabel(itype)
+        plt.xlabel('phase')
+        plt.ylabel('amplitude')
         plt.show()
     
-    a = abs(max(trend) - min(trend))
-    b = (counter - 1) * (10 ** 6)
-
-    delay = (a * (np.pi / 180)) / b
-        
-    if __name__ == '__main__':
-        print 'The time delay is ', delay
     else:
-        return delay
+        good_ntones = pcal_phaseresponse(ifile, ntones, itype, dbg)
+
+        #############################################################
+        ph_table_new = []
+
+        i = 0
+        while i < len(good_ntones):
+            ph_table_new.append(ph_table[good_ntones[i]])
+            i = i + 1
+
+        ph_new = []
+
+        j = 0
+        while j < len(good_ntones):
+            i = 0
+            while i < acc_periods:
+                ph_new.append((ph_table_new[j])[i])
+                i = i + 1
+            j = j + 1
+
+        #ph = ph_new
+        #############################################################
+
+        li = []
+
+        f, axar = plt.subplots(2)
+
+        time = np.linspace((1 / 512), 1, 512)
+
+        j = 0
+        while j < acc_periods:
+            ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
+            axar[0].plot(time, ph1)
+
+            number = max(izip(ph1, count()))[1]
+
+            j0 = number
+
+            if j == 0:
+                print 'The time delay is probably', ((j0 * 1e-6) / 512), 'microseconds'
+            
+            tau_min = j0 - 1
+            tau_max = j0 + 1
+
+            delta_tau = 0.1
+            while delta_tau >= 1e-3:
+                tau = tau_min
+            
+                tau_list = []
+                cj = []
+            
+                while tau <= tau_max:
+                    im, re = Fraq_FFT(file_read(ifile), (np.asarray(ph).real)[(j * counter) : (j * counter + counter)], (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)], tau, 1)
+                
+                    cj.append(complex(re, im))
+                    tau_list.append(tau)
+
+                    tau = tau + delta_tau
+                
+                cj = abs(np.asarray(cj))
+
+                number = max(izip(cj, count()))[1]
+                tau = tau_list[number]
+
+                tau_min = tau - delta_tau * 2
+                tau_max = tau + delta_tau * 2
+                delta_tau = delta_tau / 10
+        
+            tau = tau / 512
+            tau = float("%.6f" % (tau))
+
+            print tau
+
+            li.append(tau)
+
+            j = j + 1
+
+        tau = "%.6f" % (np.mean(li))
+
+        print 'And the clarified time delay is', tau, 'microseconds'
+        
+        if dbg == 'true':
+            axar[0].grid()
+            axar[0].set_xlabel('time')
+            axar[0].set_ylabel('amplitude')
+
+            xlist = np.linspace(1, acc_periods, acc_periods)
+            axar[1].cla()
+            axar[1].plot(xlist, li)
+            axar[1].plot(xlist, li, 'o')
+            axar[1].grid()
+            axar[1].set_xlabel('accumulation periods')
+            axar[1].set_ylabel('time delay')
+
+            plt.show()
 
 
 if __name__ == '__main__':
     main()
     
     pcal_read(ifile, ntones, itype, dbg)
-
+    
     print 'Hello. Welcome to PCal interface.'
     print 'Now tell me what you want to do:'
     print 'press 1 if uou want to plot signal and see the time delay;'
     print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response.'
     
+    global what
     what = raw_input()
 
     if what == '2':
