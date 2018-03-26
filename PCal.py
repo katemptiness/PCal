@@ -25,7 +25,6 @@ def file_read(ifile):
 def main():
     global itype, dbg, ntones, ifile, n
 
-    ntones = '1 : 512'
     itype = 'phase'
     dbg = 'false'
 
@@ -43,6 +42,7 @@ def main():
                 ifile = arg[1:]
             else:
                 ifile = arg
+                ntones = '1 : ' + str(file_read(ifile))
         elif opt in ('-n', '--ntones'):
             if arg[0] == ' ':
                 ntones = arg[1:]
@@ -559,7 +559,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         f, axar = plt.subplots(2)
 
-        time = np.linspace((1 / 512), 1, 512)
+        time = np.linspace((1 / counter), 1, counter)
 
         j = 0
         while j < acc_periods:
