@@ -6,30 +6,42 @@ import getopt, sys
 import matplotlib.pyplot as plt
 import os
 from itertools import count, izip
+import struct
 
 #ch = 0
 
 def file_read(ifile):
-    ifile = open(ifile)
+    if ifile[0:7] == 'PCAL_58':
+        ifile = open(ifile)
 
-    i = 0
-    while i < 5:
-        ifile.readline()
-        i = i + 1
+        i = 0
+        while i < 5:
+            ifile.readline()
+            i = i + 1
 
-    counter = int((str(ifile.readline()).split())[5])
+        counter = int((str(ifile.readline()).split())[5])
 
-    return counter
+        return counter
+    
+    else:
+        ifile = open(ifile, 'rb')
+    
+        pcal_version = str(ifile.read(20))
+        bandwidth, = struct.unpack('i', ifile.read(4))
+        bandwidth = int(bandwidth * 1e-6)
+    
+        return bandwidth
 
-
+    
 def main():
-    global itype, dbg, ntones, ifile, n
+    global itype, dbg, ntones, ifile, acc_periods
 
     itype = 'phase'
     dbg = 'false'
+    acc_periods = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:', ['ifile=', 'ntones=', 'itype=', 'dbg='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:a:', ['ifile=', 'ntones=', 'itype=', 'dbg=', 'acc_periods='])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -58,6 +70,11 @@ def main():
                 dbg = arg[1:]
             else:
                 dbg = arg
+        elif opt in ('-a', '--acc_periods'):
+            if arg[0] == ' ':
+                acc_periods = int(arg[1:])
+            else:
+                acc_periods = int(arg)
 
     
 def usage():
@@ -66,13 +83,14 @@ def usage():
     print 'You can use this forms to work:'
     print '-f is for path to the file;'
     print '-n is for tone numbers;'
+    print '-a is for accumulation periods'
     print '-t is for data type (amplitudes or phases);'
     print '-d is for graphics display mode (true or false).'
     print
     print 'For example:'
-    print 'python PCal.py -f W:/Files/My_File -n "1 : 512" -t phase - d true'
+    print 'python PCal.py -f W:/Files/My_File -n "1 : 512" -a "20" -t phase - d true'
     print
-    print '-n, -t & -d parameters are "1 : 512", "phase" & "false" as default, so you can only use -f.'
+    print '-n, -a, -t & -d parameters are "1 : last", "all". "phase" & "false" as default, so you can only use -f.'
 
 
 def unwraping(lista):
@@ -282,8 +300,8 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
         return Im1, Re1
 
 
-def pcal_read(ifile, ntones, itype, dbg):
-    global table, table2, acc_periods, counter, ph, ntones_full, ph_table
+def pcal_read(ifile, ntones, itype, dbg, acc_periods):
+    global table, table2, counter, ph, ntones_full, ph_table
     
     #if ifile[:5] == 'files':
         #import delays_difs
@@ -308,8 +326,10 @@ def pcal_read(ifile, ntones, itype, dbg):
         #ifile = p + '/' + ifile
     
     ifile = open(ifile)
-    acc_periods = len((ifile).readlines()) - 5
-    ifile.seek(0)
+
+    if acc_periods == None:
+        acc_periods = len((ifile).readlines()) - 5
+        ifile.seek(0)
     
     k = 1
     while k <= 5:
@@ -387,6 +407,101 @@ def pcal_read(ifile, ntones, itype, dbg):
     else:
         return table
     
+
+def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
+    global table, counter, ph, ph_table, ntones_full
+    
+    ifile = open(ifile, 'rb')
+    
+    pcal_version = str(ifile.read(20))
+    bandwidth, = struct.unpack('i', ifile.read(4))
+    bandwidth = int(bandwidth * 1e-6)
+    frequency_offset, = struct.unpack('i', ifile.read(4))
+    number_of_channels, = struct.unpack('i', ifile.read(4))
+    accumulation_period, = struct.unpack('f', ifile.read(4))
+    acc, = struct.unpack('i', ifile.read(4))
+
+    if acc_periods == None:
+        acc_periods = acc,
+    
+    ph = []
+    
+    ntones = (str(ntones).replace(',', '')).split()
+    
+    i = ntones.count(':')
+    
+    tones = []
+    
+    while i > 0:
+        g = ntones.index(':')
+        tones.append(ntones[g - 1])
+        tones.append(ntones[g + 1])
+        del ntones[g], ntones[g], ntones[g - 1]
+        i = i - 1
+    
+    li = []
+    i = 0
+    while i < len(ntones):
+        li.append(int(ntones[i]))
+        i = i + 1
+    ntones = li
+    
+    tones_1 = []
+    i = 0
+    
+    while i < len(tones) / 2:
+        g = np.linspace(int(tones[0 + 2 * i]), int(tones[1 + 2 * i]), (int(tones[1 + 2 * i]) - int(tones[0 + 2 * i]) + 1))
+        j = 0
+        while j <= (len(g) - 1):
+            tones_1.append(int(g[j]))
+            j = j + 1
+        i = i + 1
+
+    ntones = np.append(np.asarray(ntones), tones_1)
+    ntones.sort()
+    ntones_full = ntones
+    counter = len(ntones_full)
+    
+    k = 0
+    while k < counter:
+        ntones_full[k] = int(ntones_full[k]) - 1
+        k = k + 1
+
+    j = 0
+    while j < acc_periods:
+        i = 0
+        while i < (2 * counter):
+            el, = struct.unpack('f', ifile.read(4))
+            ph.append(el)
+            i = i + 1
+        j = j + 1
+
+    ph_table = (np.empty((int(counter), 0))).tolist()
+    
+    i = 0
+    while i < counter:
+        j = 0
+        while j < (acc_periods * 2):
+            ph_table[i].append(ph[i + counter * j])
+            j = j + 1
+        i = i + 1
+
+    table = (np.empty((int(counter), 0))).tolist()
+
+    i = 0
+    while i < counter:
+        j = 0
+        while j < (acc_periods * 2):
+            table[i].append((cmath.phase(complex((ph_table[i])[j], (ph_table[i])[j + 1]))) * (180 / np.pi))
+            j = j + 2
+        i = i + 1
+    
+    table.reverse()
+
+    print table[0]
+
+    return table
+
 
 def pcal_trend(ifile, ntones, itype, dbg):
     global trends, std, new_table
@@ -635,8 +750,11 @@ def pcal_delay(ifile, ntones, itype, dbg):
 if __name__ == '__main__':
     main()
     
-    pcal_read(ifile, ntones, itype, dbg)
-    
+    if ifile[0:7] == 'PCAL_58':
+        pcal_read(ifile, ntones, itype, dbg, acc_periods)
+    else:
+        pcal_reading(ifile, ntones, itype, dbg, acc_periods)
+
     print 'Hello. Welcome to PCal interface.'
     print 'Now tell me what you want to do:'
     print 'press 1 if uou want to plot signal and see the time delay;'
