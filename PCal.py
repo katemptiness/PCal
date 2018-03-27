@@ -497,7 +497,6 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         plt.plot(good_ntones, unwraping2(li), 'o')
     
         trends = []
-    
         A = (np.vstack([good_ntones, np.ones(len(good_ntones))])).transpose()
         m, c = linalg.lstsq(A, li)[0]
         trend = m * good_ntones + c
@@ -605,7 +604,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
             tau = tau / 512
             tau = float("%.6f" % (tau))
 
-            #sys.stdout.write(('[' + '#' * (j + 1)) + ('.' * (acc_periods - 1 - j)) + ']' + ("\r%d"%(j + 1) + '/' + str(acc_periods) + " "))
             sys.stdout.write(' accumulation periods have been processed...' + ('\r%d'%(j + 1) + '/' + str(acc_periods)))
             sys.stdout.flush()
 
