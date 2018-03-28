@@ -97,62 +97,66 @@ def usage():
 
 
 def unwraping(lista):
-    if np.std(lista) > 49:
+    k = 0
+    while k < (len(lista) - 1):
+        if abs(lista[k] - lista[k + 1]) > 300:
 
-        list1 = []
-        list2 = []
+            list1 = []
+            list2 = []
         
-        i = 0
-        while i < len(lista):
-            if lista[i] == abs(lista[i]):
-                if lista[i] > np.mean(lista):
-                    list1.append(i)
-                else:
-                    list2.append(i)
-            elif lista[i] == -abs(lista[i]):
-                if lista[i] < np.mean(lista):
-                    list2.append(i)
-                else:
-                    list1.append(i)
-            i = i + 1
+            i = 0
+            while i < len(lista):
+                if lista[i] == abs(lista[i]):
+                    if lista[i] > np.mean(lista):
+                        list1.append(i)
+                    else:
+                        list2.append(i)
+                elif lista[i] == -abs(lista[i]):
+                    if lista[i] < np.mean(lista):
+                        list2.append(i)
+                    else:
+                        list1.append(i)
+                i = i + 1
     
-        if len(list1) > len(list2):
-            c = '+'
-        elif len(list1) < len(list2):
-            c = '-'
-        elif len(list1) == len(list2):
-            if lista[0] >= 0:
+            if len(list1) > len(list2):
                 c = '+'
-            elif lista[0] < 0:
+            elif len(list1) < len(list2):
                 c = '-'
+            elif len(list1) == len(list2):
+                if lista[0] >= 0:
+                    c = '+'
+                elif lista[0] < 0:
+                    c = '-'
     
-        if c == '+':
-            i = 0
-            while i < (len(lista) - 1):
-                if (lista[i + 1] - lista[i]) < -180:
-                    lista[i + 1] = lista[i + 1] + 2 * 180
-                elif (lista[i + 1] - lista[i]) > 180:
-                    lista[i] = lista[i] + 2 * 180
-                i = i + 1
+            if c == '+':
+                i = 0
+                while i < (len(lista) - 1):
+                    if (lista[i + 1] - lista[i]) < -180:
+                        lista[i + 1] = lista[i + 1] + 2 * 180
+                    elif (lista[i + 1] - lista[i]) > 180:
+                        lista[i] = lista[i] + 2 * 180
+                    i = i + 1
     
-        elif c == '-':
-            i = 0
-            while i < (len(lista) - 1):
-                if (lista[i + 1] - lista[i]) < -300:
-                    lista[i] = lista[i] - 2 * 180
-                elif (lista[i + 1] - lista[i]) > 300:
-                    lista[i + 1] = lista[i + 1] - 2 * 180
-                i = i + 1
+            elif c == '-':
+                i = 0
+                while i < (len(lista) - 1):
+                    if (lista[i + 1] - lista[i]) < -300:
+                        lista[i] = lista[i] - 2 * 180
+                    elif (lista[i + 1] - lista[i]) > 300:
+                        lista[i + 1] = lista[i + 1] - 2 * 180
+                    i = i + 1
 
-        if np.mean(lista) > 0:
-            if lista[0] < 0 and lista[1] < 0:
-                lista[0] = lista[0] + 2 * 180
-                lista[1] = lista[1] + 2 * 180
-        elif np.mean(lista) < 0:
-            if lista[0] > 0 and lista[1] > 0:
-                lista[0] = lista[0] - 2 * 180
-                lista[1] = lista[1] - 2 * 180
-    
+            if np.mean(lista) > 0:
+                if lista[0] < 0 and lista[1] < 0:
+                    lista[0] = lista[0] + 2 * 180
+                    lista[1] = lista[1] + 2 * 180
+            elif np.mean(lista) < 0:
+                if lista[0] > 0 and lista[1] > 0:
+                    lista[0] = lista[0] - 2 * 180
+                    lista[1] = lista[1] - 2 * 180
+
+        k = k + 1
+
     return lista
 
 
@@ -345,6 +349,8 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
     
     ntones = np.append(np.asarray(ntones), tones_1)
     ntones.sort()
+    ntones = ntones - 1
+
     counter = len(ntones)
 
     table = (np.empty((counter, 0))).tolist()
@@ -371,7 +377,7 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
         j = j + 1
 
     ifile.close()
-
+    
     if itype == 'phase-amplitude':
         return 
     else:
@@ -433,6 +439,8 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
 
     ntones = np.append(np.asarray(ntones), tones_1)
     ntones.sort()
+    ntones = ntones - 1
+
     counter = len(ntones)
 
     ph = []
@@ -447,12 +455,13 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
             k = 0
             while k < len(ntones):
                 if j == ntones[k]:
+                    
                     ph.append(complex(el1, el2))
                 k = k + 1
 
             j = j + 1
         i = i + 1
-
+    
     ph_table = (np.empty((int(counter), 0))).tolist()
     
     i = 0
@@ -469,7 +478,7 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
     while i < counter:
         j = 0
         while j < acc_periods:
-            table[i].append((cmath.phase(complex((ph_table[i])[j - 1], (ph_table[i])[j]))) * (180 / np.pi))
+            table[i].append(cmath.phase((((ph_table[i])[j]))) * (180 / np.pi))
             j = j + 1
         i = i + 1
     
