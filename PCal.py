@@ -32,14 +32,14 @@ def file_read(ifile):
 
     
 def main():
-    global itype, dbg, ntones, ifile, acc_period
+    global itype, dbg, ntone, ifile, acc_period
 
     itype = 'phase'
     dbg = 'false'
     acc_period = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:a:', ['ifile=', 'ntones=', 'itype=', 'dbg=', 'acc_period='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:a:', ['ifile=', 'ntone=', 'itype=', 'dbg=', 'acc_period='])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -52,12 +52,12 @@ def main():
                 ifile = arg[1:]
             else:
                 ifile = arg
-                ntones = '1 : ' + str(file_read(ifile))
-        elif opt in ('-n', '--ntones'):
+                ntone = '1 : ' + str(file_read(ifile))
+        elif opt in ('-n', '--ntone'):
             if arg[0] == ' ':
-                ntones = arg[1:]
+                ntone = arg[1:]
             else:
-                ntones = arg
+                ntone = arg
         elif opt in ('-t', '--itype'):
             if arg[0] == ' ':
                 itype = arg[1:]
@@ -296,8 +296,8 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
     return Im1, Re1
     
     
-def pcal_read(ifile, ntones, itype, dbg, acc_period):
-    global table, table2, counter, ph, ntones_full, ph_table, acc_periods
+def pcal_read(ifile, ntone, itype, dbg, acc_period):
+    global table, table2, counter, ph, ph_table, acc_periods, ntones
     
     ifile = open(ifile)
 
@@ -312,7 +312,7 @@ def pcal_read(ifile, ntones, itype, dbg, acc_period):
         ifile.readline()
         k = k + 1
     
-    ntones = (str(ntones).replace(',', '')).split()
+    ntones = (str(ntone).replace(',', '')).split()
     
     i = ntones.count(':')
     
@@ -345,13 +345,7 @@ def pcal_read(ifile, ntones, itype, dbg, acc_period):
     
     ntones = np.append(np.asarray(ntones), tones_1)
     ntones.sort()
-    ntones_full = ntones
-    counter = len(ntones_full)
-    
-    k = 0
-    while k < counter:
-        ntones_full[k] = int(ntones_full[k]) - 1
-        k = k + 1
+    counter = len(ntones)
 
     table = (np.empty((counter, 0))).tolist()
     table2 = (np.empty((counter, 0))).tolist()
@@ -365,14 +359,14 @@ def pcal_read(ifile, ntones, itype, dbg, acc_period):
         i = 0
         while i < counter:
             if itype == 'phase':
-                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
+                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
             elif itype == 'amplitude':
-                table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
+                table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
             elif itype == 'phase-amplitude':
-                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
-                table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
-            ph.append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
-            #ph_table[i].append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
+                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
+                table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
+            ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
+            #ph_table[i].append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
 
@@ -384,8 +378,8 @@ def pcal_read(ifile, ntones, itype, dbg, acc_period):
         return table
     
 
-def pcal_reading(ifile, ntones, itype, dbg, acc_period):
-    global table, counter, ph, ph_table, ntones_full, acc_periods
+def pcal_reading(ifile, ntone, itype, dbg, acc_period):
+    global table, counter, ph, ph_table, acc_periods, ntones
     
     r = ifile
 
@@ -406,7 +400,7 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_period):
     
     ph = []
     
-    ntones = (str(ntones).replace(',', '')).split()
+    ntones = (str(ntone).replace(',', '')).split()
     
     i = ntones.count(':')
     
@@ -439,13 +433,7 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_period):
 
     ntones = np.append(np.asarray(ntones), tones_1)
     ntones.sort()
-    ntones_full = ntones
-    counter = len(ntones_full)
-    
-    k = 0
-    while k < counter:
-        ntones_full[k] = int(ntones_full[k]) - 1
-        k = k + 1
+    counter = len(ntones)
 
     ph = []
 
@@ -493,6 +481,7 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_period):
 
 
 def pcal_trend(ifile, ntones, itype, dbg):
+
     global trends, std, new_table
 
     if dbg == 'true' and what == '2':
@@ -547,7 +536,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
             BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
             AB = np.sqrt(BC * BC + AC * AC)
             alpha = np.arcsin(BC / AB) * (180 / np.pi)
-            axar[1].plot((ntones_full[j] + 1), alpha, 'o')
+            axar[1].plot((int(ntones[j]) + 1), alpha, 'o')
             j = j + 1
 
         axar[1].grid()
@@ -556,7 +545,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
 
         j = 0
         while j < counter:
-            axar[2].plot((ntones_full[j] + 1), std[j], 'o')
+            axar[2].plot((ntones[j] + 1), std[j], 'o')
             j = j + 1
         
         axar[2].grid()
@@ -614,16 +603,6 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
             else:
                 plt.ylabel(itype)
             plt.show()
-    
-    #a = abs(max(trend) - min(trend))
-    #b = (counter - 1) * (10 ** 6)
-
-    #delay = (a * (np.pi / 180)) / b
-        
-    #if __name__ == '__main__':
-        #print 'The time delay is ', delay
-    #else:
-        #return delay
 
     return good_ntones
 
@@ -740,9 +719,9 @@ if __name__ == '__main__':
     print 'Hello. Welcome to PCal interface. Please wait until your file will be ready.'
     
     if ifile[0:7] == 'PCAL_58':
-        pcal_read(ifile, ntones, itype, dbg, acc_period)
+        pcal_read(ifile, ntone, itype, dbg, acc_period)
     else:
-        pcal_reading(ifile, ntones, itype, dbg, acc_period)
+        pcal_reading(ifile, ntone, itype, dbg, acc_period)
 
     print '\nNow tell me what you want to do:'
     print 'press 1 if uou want to plot signal and see the time delay;'
