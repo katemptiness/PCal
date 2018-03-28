@@ -34,14 +34,14 @@ def file_read(ifile):
 
     
 def main():
-    global itype, dbg, ntones, ifile, acc_periods
+    global itype, dbg, ntones, ifile, acc_period
 
     itype = 'phase'
     dbg = 'false'
-    acc_periods = None
+    acc_period = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:a:', ['ifile=', 'ntones=', 'itype=', 'dbg=', 'acc_periods='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:a:', ['ifile=', 'ntones=', 'itype=', 'dbg=', 'acc_period='])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -70,11 +70,14 @@ def main():
                 dbg = arg[1:]
             else:
                 dbg = arg
-        elif opt in ('-a', '--acc_periods'):
+        elif opt in ('-a', '--acc_period'):
             if arg[0] == ' ':
-                acc_periods = int(arg[1:])
+                acc_period = int(arg[1:])
             else:
-                acc_periods = int(arg)
+                acc_period = int(arg)
+            if acc_period == 1:
+                print 'Sorry, -a parameter should be more than 1.'
+                sys.exit()
 
     
 def usage():
@@ -83,14 +86,16 @@ def usage():
     print 'You can use this forms to work:'
     print '-f is for path to the file;'
     print '-n is for tone numbers;'
-    print '-a is for accumulation periods'
+    print '-a is for accumulation periods;'
     print '-t is for data type (amplitudes or phases);'
     print '-d is for graphics display mode (true or false).'
     print
     print 'For example:'
     print 'python PCal.py -f W:/Files/My_File -n "1 : 512" -a "20" -t phase - d true'
     print
-    print '-n, -a, -t & -d parameters are "1 : last", "all". "phase" & "false" as default, so you can only use -f.'
+    print '-n, -a, -t & -d parameters are "1 : last", "all", "phase" & "false" as default, so you can only use -f.'
+    print
+    print 'Warning: -a parameter (accumulation periods) should be more than 1!'
 
 
 def unwraping(lista):
@@ -300,8 +305,8 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
         return Im1, Re1
 
 
-def pcal_read(ifile, ntones, itype, dbg, acc_periods):
-    global table, table2, counter, ph, ntones_full, ph_table
+def pcal_read(ifile, ntones, itype, dbg, acc_period):
+    global table, table2, counter, ph, ntones_full, ph_table, acc_periods
     
     #if ifile[:5] == 'files':
         #import delays_difs
@@ -327,9 +332,11 @@ def pcal_read(ifile, ntones, itype, dbg, acc_periods):
     
     ifile = open(ifile)
 
-    if acc_periods == None:
+    if acc_period == None:
         acc_periods = len((ifile).readlines()) - 5
         ifile.seek(0)
+    else:
+        acc_periods = acc_period
     
     k = 1
     while k <= 5:
@@ -408,8 +415,8 @@ def pcal_read(ifile, ntones, itype, dbg, acc_periods):
         return table
     
 
-def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
-    global table, counter, ph, ph_table, ntones_full
+def pcal_reading(ifile, ntones, itype, dbg, acc_period):
+    global table, counter, ph, ph_table, ntones_full, acc_periods
     
     r = ifile
 
@@ -423,8 +430,10 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
     accumulation_period, = struct.unpack('f', ifile.read(4))
     acc, = struct.unpack('i', ifile.read(4))
 
-    if acc_periods == None:
+    if acc_period == None:
         acc_periods = acc
+    else:
+        acc_periods = acc_period
     
     ph = []
     
@@ -469,8 +478,6 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
         ntones_full[k] = int(ntones_full[k]) - 1
         k = k + 1
 
-    #################################################################
-
     ph = []
 
     i = 0
@@ -488,8 +495,6 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
 
             j = j + 1
         i = i + 1
-    
-    #################################################################
 
     ph_table = (np.empty((int(counter), 0))).tolist()
     
@@ -500,8 +505,6 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
             ph_table[i].append(ph[i + counter * j])
             j = j + 1
         i = i + 1
-
-    #################################################################
 
     table = (np.empty((int(counter), 0))).tolist()
     
@@ -514,8 +517,6 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
         i = i + 1
     
     table.reverse()
-
-    #################################################################
 
     ifile.close()
 
@@ -747,7 +748,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         tau = "%.6f" % (np.mean(li))
 
-        print
         print '\nAnd the clarified time delay is', tau, 'microseconds'
         
         if dbg == 'true':
@@ -768,20 +768,19 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
 if __name__ == '__main__':
     main()
+    print 'Hello. Welcome to PCal interface. Please wait until your file will be ready.'
     
     if ifile[0:7] == 'PCAL_58':
-        pcal_read(ifile, ntones, itype, dbg, acc_periods)
+        pcal_read(ifile, ntones, itype, dbg, acc_period)
     else:
-        pcal_reading(ifile, ntones, itype, dbg, acc_periods)
+        pcal_reading(ifile, ntones, itype, dbg, acc_period)
 
-    print 'Hello. Welcome to PCal interface.'
-    print 'Now tell me what you want to do:'
+    print '\nNow tell me what you want to do:'
     print 'press 1 if uou want to plot signal and see the time delay;'
     print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response.'
     
     global what
     what = raw_input()
-
     if what == '2':
         pcal_phaseresponse(ifile, ntones, itype, dbg)
     elif what == '1':
