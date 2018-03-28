@@ -498,8 +498,6 @@ def pcal_trend(ifile, ntones, itype, dbg):
     if dbg == 'true' and what == '2':
         f, axar = plt.subplots(4)
 
-    #time = np.linspace(0, 0.5 * acc_periods, acc_periods)
-
     time = np.linspace(0, accumulation_period * acc_periods, acc_periods)
 
     trends = []
