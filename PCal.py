@@ -411,6 +411,8 @@ def pcal_read(ifile, ntones, itype, dbg, acc_periods):
 def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
     global table, counter, ph, ph_table, ntones_full
     
+    r = ifile
+
     ifile = open(ifile, 'rb')
     
     pcal_version = str(ifile.read(20))
@@ -470,17 +472,23 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
     #################################################################
 
     ph = []
-    print counter
+
     i = 0
     while i < acc_periods:
         j = 0
-        while j < counter:
+        while j < file_read(r):
             el1, = struct.unpack('f', ifile.read(4))
             el2, = struct.unpack('f', ifile.read(4))
-            ph.append(complex(el1, el2))
+
+            k = 0
+            while k < len(ntones):
+                if j == ntones[k]:
+                    ph.append(complex(el1, el2))
+                k = k + 1
+
             j = j + 1
         i = i + 1
-
+    
     #################################################################
 
     ph_table = (np.empty((int(counter), 0))).tolist()
