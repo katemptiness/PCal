@@ -8,8 +8,6 @@ import os
 from itertools import count, izip
 import struct
 
-#ch = 0
-
 def file_read(ifile):
     if ifile[0:7] == 'PCAL_58':
         ifile = open(ifile)
@@ -255,80 +253,51 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
         I.append('')
         kk = kk + 1
     
-    try:
+    j = 0
+    while j < N:
+        I[j] = SetIndex0(j, N, iPow)
+        j = j + 1
+        
+    a = np.pi * Tau
+        
+    if bInv == 0:
+        a = a * (-1)
+        
+    i = 0
+    while i < iPow:
+        acos[i] = np.cos(a)
+        asin[i] = np.sin(a)
+        a = a / 2
+        i = i + 1
+        
+    j = 0
+    while j < N:
+        j1 = I[j]
+        Re[j1] = Re0[j]
+        Im[j1] = Im0[j]
+        j = j + 1
+        
+    k = 2
+        
+    l = 0
+    while l < iPow:
         j = 0
         while j < N:
-            I[j] = SetIndex0(j, N, iPow)
-            j = j + 1
+            j1 = j + k / 2
+            Re[j] = Re[j] + Re[j1] * acos[l] - Im[j1] * asin[l]
+            Im[j] = Im[j] + Re[j1] * asin[l] + Im[j1] * acos[l]
+            j = j + k
+        k = k * 2
+        l = l + 1
         
-        a = np.pi * Tau
+    Re1 = Re[0] / N
+    Im1 = Im[0] / N
         
-        if bInv == 0:
-            a = a * (-1)
-        
-        i = 0
-        while i < iPow:
-            acos[i] = np.cos(a)
-            asin[i] = np.sin(a)
-            a = a / 2
-            i = i + 1
-        
-        j = 0
-        while j < N:
-            j1 = I[j]
-            Re[j1] = Re0[j]
-            Im[j1] = Im0[j]
-            j = j + 1
-        
-        k = 2
-        
-        l = 0
-        while l < iPow:
-            j = 0
-            while j < N:
-                j1 = j + k / 2
-                Re[j] = Re[j] + Re[j1] * acos[l] - Im[j1] * asin[l]
-                Im[j] = Im[j] + Re[j1] * asin[l] + Im[j1] * acos[l]
-                j = j + k
-            k = k * 2
-            l = l + 1
-        
-        Re1 = Re[0] / N
-        Im1 = Im[0] / N
-        
-        del Re, Im, acos, asin, I
-        return Im1, Re1
+    return Im1, Re1
     
-    except:
-        del Re, Im, acos, asin, I
-        
-        return Im1, Re1
-
-
+    
 def pcal_read(ifile, ntones, itype, dbg, acc_period):
     global table, table2, counter, ph, ntones_full, ph_table, acc_periods
-    
-    #if ifile[:5] == 'files':
-        #import delays_difs
-	#reload(delays_difs)
-        #p = delays_difs.help_me()
-        
-        #a = os.listdir(p)
-        
-        #files = []
-        #i = 0
-        #while i < len(a):
-            #if (a[i])[:5] == 'PCAL_':
-                #files.append(a[i])
-            #i = i + 1
-        #if type(ifile[6]) is str:
-            #k = ch
-            #ch = ch + 1
-            #ifile = files[int(k)]
-        #else:
-            #ifile = files[int(ifile[6])]
-    
-        #ifile = p + '/' + ifile
     
     ifile = open(ifile)
 
