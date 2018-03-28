@@ -396,10 +396,10 @@ def pcal_read(ifile, ntones, itype, dbg, acc_periods):
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4]))) * (180 / np.pi))
                 table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones_full[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones_full[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
-            ph_table[i].append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
+            #ph_table[i].append(complex(float(smh[2 + int(ntones_full[i]) * 4]), float(smh[3 + int(ntones_full[i]) * 4])))
             i = i + 1
         j = j + 1
-    
+
     ifile.close()
 
     if itype == 'phase-amplitude':
@@ -422,7 +422,7 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
     acc, = struct.unpack('i', ifile.read(4))
 
     if acc_periods == None:
-        acc_periods = acc,
+        acc_periods = acc
     
     ph = []
     
@@ -467,38 +467,49 @@ def pcal_reading(ifile, ntones, itype, dbg, acc_periods):
         ntones_full[k] = int(ntones_full[k]) - 1
         k = k + 1
 
-    j = 0
-    while j < acc_periods:
-        i = 0
-        while i < (2 * counter):
-            el, = struct.unpack('f', ifile.read(4))
-            ph.append(el)
-            i = i + 1
-        j = j + 1
+    #################################################################
+
+    ph = []
+    print counter
+    i = 0
+    while i < acc_periods:
+        j = 0
+        while j < counter:
+            el1, = struct.unpack('f', ifile.read(4))
+            el2, = struct.unpack('f', ifile.read(4))
+            ph.append(complex(el1, el2))
+            j = j + 1
+        i = i + 1
+
+    #################################################################
 
     ph_table = (np.empty((int(counter), 0))).tolist()
     
     i = 0
     while i < counter:
         j = 0
-        while j < (acc_periods * 2):
+        while j < acc_periods:
             ph_table[i].append(ph[i + counter * j])
             j = j + 1
         i = i + 1
 
-    table = (np.empty((int(counter), 0))).tolist()
+    #################################################################
 
+    table = (np.empty((int(counter), 0))).tolist()
+    
     i = 0
     while i < counter:
         j = 0
-        while j < (acc_periods * 2):
-            table[i].append((cmath.phase(complex((ph_table[i])[j], (ph_table[i])[j + 1]))) * (180 / np.pi))
-            j = j + 2
+        while j < acc_periods:
+            table[i].append((cmath.phase(complex((ph_table[i])[j - 1], (ph_table[i])[j]))) * (180 / np.pi))
+            j = j + 1
         i = i + 1
     
     table.reverse()
 
-    print table[0]
+    #################################################################
+
+    ifile.close()
 
     return table
 
@@ -510,7 +521,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         f, axar = plt.subplots(4)
 
     time = np.linspace(0, 0.5 * acc_periods, acc_periods)
-    
+
     trends = []
     
     i = 0
@@ -648,25 +659,25 @@ def pcal_delay(ifile, ntones, itype, dbg):
         plt.show()
     
     else:
-        good_ntones = pcal_phaseresponse(ifile, ntones, itype, dbg)
-
         #############################################################
-        ph_table_new = []
 
-        i = 0
-        while i < len(good_ntones):
-            ph_table_new.append(ph_table[good_ntones[i]])
-            i = i + 1
+        #good_ntones = pcal_phaseresponse(ifile, ntones, itype, dbg)
+        #ph_table_new = []
 
-        ph_new = []
+        #i = 0
+        #while i < len(good_ntones):
+            #ph_table_new.append(ph_table[good_ntones[i]])
+            #i = i + 1
 
-        j = 0
-        while j < len(good_ntones):
-            i = 0
-            while i < acc_periods:
-                ph_new.append((ph_table_new[j])[i])
-                i = i + 1
-            j = j + 1
+        #ph_new = []
+
+        #j = 0
+        #while j < len(good_ntones):
+            #i = 0
+            #while i < acc_periods:
+                #ph_new.append((ph_table_new[j])[i])
+                #i = i + 1
+            #j = j + 1
         #############################################################
 
         li = []
