@@ -301,7 +301,7 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
     
     
 def pcal_read(ifile, ntone, itype, dbg, acc_period):
-    global table, table2, counter, ph, ph_table, acc_periods, ntones
+    global table, table2, counter, ph, ph_table, acc_periods, ntones, accumulation_period
     
     ifile = open(ifile)
 
@@ -315,6 +315,8 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
     while k <= 5:
         ifile.readline()
         k = k + 1
+
+    accumulation_period = 0.5
     
     ntones = (str(ntone).replace(',', '')).split()
     
@@ -385,7 +387,7 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
     
 
 def pcal_reading(ifile, ntone, itype, dbg, acc_period):
-    global table, counter, ph, ph_table, acc_periods, ntones
+    global table, counter, ph, ph_table, acc_periods, ntones, accumulation_period
     
     r = ifile
 
@@ -496,7 +498,9 @@ def pcal_trend(ifile, ntones, itype, dbg):
     if dbg == 'true' and what == '2':
         f, axar = plt.subplots(4)
 
-    time = np.linspace(0, 0.5 * acc_periods, acc_periods)
+    #time = np.linspace(0, 0.5 * acc_periods, acc_periods)
+
+    time = np.linspace(0, accumulation_period * acc_periods, acc_periods)
 
     trends = []
     
