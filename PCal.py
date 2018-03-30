@@ -454,12 +454,17 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
             el1, = struct.unpack('f', ifile.read(4))
             el2, = struct.unpack('f', ifile.read(4))
 
-            k = 0
-            while k < len(ntones):
-                if j == ntones[k]:
-                    
-                    ph.append(complex(el1, el2))
-                k = k + 1
+            if len(ntones) == file_read(r):
+                ph.append(complex(el1, el2))
+
+            else:
+                k = 0
+                while k < len(ntones):
+                
+                    if j == ntones[k]:
+                        ph.append(complex(el1, el2))
+                
+                    k = k + 1
 
             j = j + 1
         i = i + 1
@@ -483,7 +488,7 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
             table[i].append(cmath.phase((((ph_table[i])[j]))) * (180 / np.pi))
             j = j + 1
         i = i + 1
-    
+
     table.reverse()
 
     ifile.close()
