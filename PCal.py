@@ -485,11 +485,17 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
     while i < counter:
         j = 0
         while j < acc_periods:
-            table[i].append(cmath.phase((((ph_table[i])[j]))) * (180 / np.pi))
+            
+            if itype == 'phase':
+                table[i].append(cmath.phase((((ph_table[i])[j]))) * (180 / np.pi))
+            elif itype == 'amplitude':
+                table[i].append(math.hypot(((ph[i])[j]).real, ((ph_table[i])[j]).imag))
+
             j = j + 1
         i = i + 1
 
     table.reverse()
+    print table[0]
 
     ifile.close()
 
