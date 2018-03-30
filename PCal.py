@@ -726,7 +726,8 @@ if __name__ == '__main__':
     main()
     print 'Hello. Welcome to PCal interface. Please wait until your file will be ready.'
     
-    if ifile[0:7] == 'PCAL_58':
+    where_to_go = open(ifile)
+    if (where_to_go.readline())[0] == '#':
         pcal_read(ifile, ntone, itype, dbg, acc_period)
     else:
         pcal_reading(ifile, ntone, itype, dbg, acc_period)
