@@ -99,7 +99,7 @@ def usage():
 def unwraping(lista):
     k = 0
     while k < (len(lista) - 1):
-        if abs(lista[k] - lista[k + 1]) > 300:
+        if abs(lista[k] - lista[k + 1]) > 340:
 
             list1 = []
             list2 = []
@@ -132,28 +132,28 @@ def unwraping(lista):
                 i = 0
                 while i < (len(lista) - 1):
                     if (lista[i + 1] - lista[i]) < -180:
-                        lista[i + 1] = lista[i + 1] + 2 * 180
+                        lista[i + 1] = lista[i + 1] + 360
                     elif (lista[i + 1] - lista[i]) > 180:
-                        lista[i] = lista[i] + 2 * 180
+                        lista[i] = lista[i] + 360
                     i = i + 1
     
             elif c == '-':
                 i = 0
                 while i < (len(lista) - 1):
-                    if (lista[i + 1] - lista[i]) < -300:
-                        lista[i] = lista[i] - 2 * 180
-                    elif (lista[i + 1] - lista[i]) > 300:
-                        lista[i + 1] = lista[i + 1] - 2 * 180
+                    if (lista[i + 1] - lista[i]) < -340:
+                        lista[i] = lista[i] - 360
+                    elif (lista[i + 1] - lista[i]) > 340:
+                        lista[i + 1] = lista[i + 1] - 360
                     i = i + 1
 
             if np.mean(lista) > 0:
                 if lista[0] < 0 and lista[1] < 0:
-                    lista[0] = lista[0] + 2 * 180
-                    lista[1] = lista[1] + 2 * 180
+                    lista[0] = lista[0] + 360
+                    lista[1] = lista[1] + 360
             elif np.mean(lista) < 0:
                 if lista[0] > 0 and lista[1] > 0:
-                    lista[0] = lista[0] - 2 * 180
-                    lista[1] = lista[1] - 2 * 180
+                    lista[0] = lista[0] - 360
+                    lista[1] = lista[1] - 360
 
         k = k + 1
 
@@ -497,7 +497,6 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
 
 
 def pcal_trend(ifile, ntones, itype, dbg):
-
     global trends, std, new_table
 
     if dbg == 'true' and what == '2':
@@ -506,19 +505,20 @@ def pcal_trend(ifile, ntones, itype, dbg):
     time = np.linspace(0, accumulation_period * acc_periods, acc_periods)
 
     trends = []
-    
+
     i = 0
     while i < counter:
-        if dbg == 'true' and what == '2':
-            axar[0].plot(time, unwraping(table[i - 1]), 'o')
         A = (np.vstack([time, np.ones(len(time))])).transpose()
         m, c = linalg.lstsq(A, unwraping(table[i - 1]))[0]
         trend = m * time + c
         trends.append(trend)
-        if dbg == 'true' and what == '2':
+                
+        if dbg == 'true':
+            axar[0].plot(time, unwraping(table[i - 1]), 'o')
             axar[0].plot(time, trend)
+        
         i = i + 1
-    
+
     AC = len(time)
     
     alphas = []
@@ -538,7 +538,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
             re_table.append(unwraping(table[i])[j] - j * re)
             j = j + 1
         std.append(np.std(unwraping(re_table)))
-	new_table.append(re_table)
+        new_table.append(re_table)
         re_table = []
         i = i + 1
             
@@ -546,7 +546,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         axar[0].grid()
         axar[0].set_xlabel('time')
         axar[0].set_ylabel(itype)
-        
+
         j = 0
         while j < counter:
             BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
@@ -563,7 +563,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         while j < counter:
             axar[2].plot((ntones[j] + 1), std[j], 'o')
             j = j + 1
-        
+
         axar[2].grid()
         axar[2].set_xlabel('tone numbers')
         axar[2].set_ylabel('standard deviation')
@@ -571,7 +571,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         axar[3].hist(std, bins = counter)
         axar[3].set_xlabel('standard deviation')
         axar[3].set_ylabel('tones')
-        
+
         plt.show()
 
 
@@ -605,13 +605,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         plt.plot(good_ntones, unwraping2(li))
         plt.plot(good_ntones, unwraping2(li), 'o')
     
-        trends = []
-        A = (np.vstack([good_ntones, np.ones(len(good_ntones))])).transpose()
-        m, c = linalg.lstsq(A, li)[0]
-        trend = m * good_ntones + c
-    
         if dbg == 'true':
-            plt.plot(good_ntones, trend)
             plt.grid()
             plt.xlabel('frequency')
             if itype == 'phase-amplitude':
@@ -619,8 +613,6 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
             else:
                 plt.ylabel(itype)
             plt.show()
-
-    return good_ntones
 
 
 def pcal_delay(ifile, ntones, itype, dbg):
