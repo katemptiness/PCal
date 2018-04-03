@@ -9,7 +9,8 @@ from itertools import count, izip
 import struct
 
 def file_read(ifile):
-    if ifile[0:7] == 'PCAL_58':
+    where_to_go = open(ifile)
+    if (where_to_go.readline())[0] == '#': 
         ifile = open(ifile)
 
         i = 0
@@ -653,13 +654,20 @@ def pcal_delay(ifile, ntones, itype, dbg):
         li = []
 
         f, axar = plt.subplots(2)
+        axar[0].grid()
 
         time = np.linspace((1 / counter), 1, counter)
 
         j = 0
         while j < acc_periods:
             ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
+            
+            plt.pause(0.001)
+
             axar[0].plot(time, ph1)
+            axar[0].set_xlabel('time')
+            axar[0].set_ylabel('amplitude')
+            plt.draw()
 
             number = max(izip(ph1, count()))[1]
 
@@ -705,27 +713,28 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
             li.append(tau)
 
+            if dbg == 'true':
+                xlist = np.linspace(1, (j + 1), (j + 1))
+                
+                axar[1].cla()
+                
+                plt.pause(0.001)
+                
+                axar[1].plot(xlist, li)
+                axar[1].plot(xlist, li, 'o')
+                axar[1].grid()
+                axar[1].set_xlabel('accumulation periods')
+                axar[1].set_ylabel('time delay')
+                plt.draw()
+            
             j = j + 1
-
+        
         tau = "%.6f" % (np.mean(li))
 
         print '\nAnd the clarified time delay is', tau, 'microseconds'
+
+        plt.show()
         
-        if dbg == 'true':
-            axar[0].grid()
-            axar[0].set_xlabel('time')
-            axar[0].set_ylabel('amplitude')
-
-            xlist = np.linspace(1, acc_periods, acc_periods)
-            axar[1].cla()
-            axar[1].plot(xlist, li)
-            axar[1].plot(xlist, li, 'o')
-            axar[1].grid()
-            axar[1].set_xlabel('accumulation periods')
-            axar[1].set_ylabel('time delay')
-
-            plt.show()
-
 
 if __name__ == '__main__':
     main()
