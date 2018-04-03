@@ -658,8 +658,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         time = np.linspace((1 / counter), 1, counter)
 
-        j = 0
-        while j < acc_periods:
+        j = (acc_periods-1)
+        while j == (acc_periods-1):
             ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
             
             if dbg == 'true':
@@ -667,8 +667,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 plt.pause(0.001)
                 axar[0].set_xlabel('time')
                 axar[0].set_ylabel('amplitude')
-                plt.draw()
-
+                
             number = max(izip(ph1, count()))[1]
 
             j0 = number
