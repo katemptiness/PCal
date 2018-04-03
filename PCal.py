@@ -662,12 +662,12 @@ def pcal_delay(ifile, ntones, itype, dbg):
         while j < acc_periods:
             ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
             
-            plt.pause(0.001)
-
-            axar[0].plot(time, ph1)
-            axar[0].set_xlabel('time')
-            axar[0].set_ylabel('amplitude')
-            plt.draw()
+            if dbg == 'true':
+                axar[0].plot(time, ph1)
+                plt.pause(0.001)
+                axar[0].set_xlabel('time')
+                axar[0].set_ylabel('amplitude')
+                plt.draw()
 
             number = max(izip(ph1, count()))[1]
 
@@ -733,7 +733,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         print '\nAnd the clarified time delay is', tau, 'microseconds'
 
-        plt.show()
+        if dbg == 'true':
+            plt.show()
         
 
 if __name__ == '__main__':
