@@ -582,8 +582,6 @@ def pcal_trend(ifile, ntones, itype, dbg):
 
 
 def pcal_phaseresponse(ifile, ntones, itype, dbg):
-    global delay
-
     pcal_trend(ifile, ntones, itype, dbg)
     
     li = []
@@ -658,8 +656,10 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
         time = np.linspace((1 / counter), 1, counter)
 
-        j = (acc_periods-1)
-        while j == (acc_periods-1):
+        ampls = []
+
+        j = 0
+        while j < acc_periods:
             ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
             
             if dbg == 'true':
@@ -669,6 +669,22 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 axar[0].set_ylabel('amplitude')
                 
             number = max(izip(ph1, count()))[1]
+
+            ###################################################################################
+            ampl = ph1[number]
+            
+            noise = (ph1).tolist()
+            i = (number - 10)
+            while i < (number + 10):
+                del noise[i]
+                i = i + 1
+
+            m = max(noise)
+
+            snr = ((ampl - m) / np.std(np.asarray(noise)))
+
+            sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * snr))
+            ###################################################################################
 
             j0 = number
 
