@@ -676,29 +676,30 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
             if number >= 250:
                 i = 0
-                while i < (number - 40):
+                while i < (number - 100):
                     noise.append(ph1[i])
                     i = i + 1
             elif number < 250:
-                i = file_read(ifile)
-                while i > (number + 40):
+                i = (file_read(ifile) - 1)
+                while i > (number + 100):
                     noise.append(ph1[i])
                     i = i - 1
 
-            print len(noise)
             m = np.mean(noise)
 
             snr = ((ampl - m) / np.std(np.asarray(noise)))
 
             sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
 
+            ########################################################
             if j == (acc_periods - 1):
                 print
                 print 'A =', ampl
                 print 'std =', np.std(np.asarray(noise))           
 
                 print 'snr =', snr
-                print 'sigma =', (sigma) * 1e12 
+                print 'sigma =', (sigma) * 1e12
+            ########################################################
 
             j0 = number
 
