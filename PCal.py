@@ -673,7 +673,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
             ampl = ph1[number]
             
             noise = []
-
             if number >= 250:
                 i = 0
                 while i < (number - 100):
@@ -687,7 +686,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
             m = np.mean(noise)
 
-            snr = ((ampl - m) / np.std(np.asarray(noise)))
+            snr = ((ampl - m) / np.std(np.asarray(noise) - m))
 
             sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
 
@@ -695,10 +694,10 @@ def pcal_delay(ifile, ntones, itype, dbg):
             if j == (acc_periods - 1):
                 print
                 print 'A =', ampl
-                print 'std =', np.std(np.asarray(noise))           
-
+                print 'std =', np.std(np.asarray(noise))
                 print 'snr =', snr
                 print 'sigma =', (sigma) * 1e12
+                print
             ########################################################
 
             j0 = number
@@ -769,7 +768,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
 if __name__ == '__main__':
     main()
-    print 'Hello. Welcome to PCal interface. Please wait until your file will be ready.'
+    print 'Hello. Welcome to PCal. Please wait until your file will be ready.'
     
     where_to_go = open(ifile)
     if (where_to_go.readline())[0] == '#':
