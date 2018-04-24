@@ -690,16 +690,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
             sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
 
-            ########################################################
-            if j == (acc_periods - 1):
-                print
-                print 'A =', ampl
-                print 'std =', np.std(np.asarray(noise))
-                print 'snr =', snr
-                print 'sigma =', (sigma) * 1e12
-                print
-            ########################################################
-
             j0 = number
 
             if j == 0:
@@ -711,7 +701,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
             tau_max = j0 + 1
 
             delta_tau = 0.1
-            while delta_tau >= 1e-3:
+            while delta_tau >= 5e-4:
                 tau = tau_min
             
                 tau_list = []
@@ -729,11 +719,14 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
                 number = max(izip(cj, count()))[1]
                 tau = tau_list[number]
-
                 tau_min = tau - delta_tau * 2
                 tau_max = tau + delta_tau * 2
-                delta_tau = delta_tau / 10
-        
+                
+                if delta_tau == 1e-3:
+                    delta_tau = delta_tau / 2
+                else:
+                    delta_tau = delta_tau / 10
+
             tau = tau / 512
             tau = float("%.6f" % (tau))
 
