@@ -758,6 +758,10 @@ def pcal_delay(ifile, ntones, itype, dbg):
         if dbg == 'true':
             plt.show()
         
+            print '\nDo you wanna see all the time delays? (y / n)'
+            if raw_input() == 'y':
+                print li, '(microseconds)'
+
 
 if __name__ == '__main__':
     main()
