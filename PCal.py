@@ -584,6 +584,8 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         axar[3].set_xlabel('standard deviation')
         axar[3].set_ylabel('tones')
 
+        plt.gcf().canvas.set_window_title('Phase of time graph, tilt angle & STD')
+
         plt.show(block = False)
 
     li = []
@@ -620,6 +622,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
                 plt.ylabel('phase')
             else:
                 plt.ylabel(itype)
+            plt.gcf().canvas.set_window_title('Phase-frequency responce')
             plt.show()
 
 
@@ -629,6 +632,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
         plt.grid()
         plt.xlabel('phase')
         plt.ylabel('amplitude')
+        plt.gcf().canvas.set_window_title('Amplitude of phase graph')
         plt.show()
     
     else:
@@ -677,7 +681,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
             if j == 0:
                 j1 = ("%.6f" % (((j0 * 1e-6) / 512) * 1e6))
-                print 'The time delay is probably', j1, 'microseconds \n'
+                print 'The time delay is about', j1, 'microseconds \n'
                 print 'Starting the calculation...'
             
             tau_min = j0 - 1
@@ -730,6 +734,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 axar[1].grid()
                 axar[1].set_xlabel('accumulation periods')
                 axar[1].set_ylabel('time delay')
+                plt.gcf().canvas.set_window_title('Signal view & time delays')
                 plt.draw()
             
             j = j + 1
@@ -739,7 +744,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
         print '\nAnd the clarified time delay is', tau, 'microseconds'
 
         if dbg == 'true':
-            plt.show()
+            plt.gcf().canvas.set_window_title('Signal view & time delays')
+            plt.show(block = False)
         
             print '\nDo you wanna see all the time delays? (y / n)'
             if raw_input() == 'y':
