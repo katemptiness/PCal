@@ -502,7 +502,7 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
     return table
 
 
-def pcal_trend(ifile, ntones, itype, dbg):
+def pcal_phaseresponse(ifile, ntones, itype, dbg):
     global trends, std, new_table
 
     if dbg == 'true' and what == '2':
@@ -520,6 +520,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         trends.append(trend)
                 
         if dbg == 'true':
+            plt.figure(1)
             axar[0].plot(time, unwraping(table[i - 1]), 'o')
             axar[0].plot(time, trend)
         
@@ -549,6 +550,7 @@ def pcal_trend(ifile, ntones, itype, dbg):
         i = i + 1
             
     if dbg == 'true' and what == '2':
+        plt.figure(1)
         axar[0].grid()
         axar[0].set_xlabel('time')
         axar[0].set_ylabel(itype)
@@ -558,18 +560,22 @@ def pcal_trend(ifile, ntones, itype, dbg):
             BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
             AB = np.sqrt(BC * BC + AC * AC)
             alpha = np.arcsin(BC / AB) * (180 / np.pi)
+            plt.figure(1)
             axar[1].plot((int(ntones[j]) + 1), alpha, 'o')
             j = j + 1
 
+        plt.figure(1)
         axar[1].grid()
         axar[1].set_xlabel('tone numbers')
         axar[1].set_ylabel('tilt angle')
 
         j = 0
         while j < counter:
+            plt.figure(1)
             axar[2].plot((ntones[j] + 1), std[j], 'o')
             j = j + 1
 
+        plt.figure(1)
         axar[2].grid()
         axar[2].set_xlabel('tone numbers')
         axar[2].set_ylabel('standard deviation')
@@ -578,12 +584,8 @@ def pcal_trend(ifile, ntones, itype, dbg):
         axar[3].set_xlabel('standard deviation')
         axar[3].set_ylabel('tones')
 
-        plt.show()
+        plt.show(block = False)
 
-
-def pcal_phaseresponse(ifile, ntones, itype, dbg):
-    pcal_trend(ifile, ntones, itype, dbg)
-    
     li = []
     
     std_threshold = 4 * min(std)
@@ -606,10 +608,12 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
             li.append(np.mean(good_table[i]))
             i = i + 1
 
+        plt.figure(2)
         plt.plot(good_ntones, unwraping2(li))
         plt.plot(good_ntones, unwraping2(li), 'o')
     
         if dbg == 'true':
+            plt.figure(2)
             plt.grid()
             plt.xlabel('frequency')
             if itype == 'phase-amplitude':
@@ -628,27 +632,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
         plt.show()
     
     else:
-        #############################################################
-
-        #good_ntones = pcal_phaseresponse(ifile, ntones, itype, dbg)
-        #ph_table_new = []
-
-        #i = 0
-        #while i < len(good_ntones):
-            #ph_table_new.append(ph_table[good_ntones[i]])
-            #i = i + 1
-
-        #ph_new = []
-
-        #j = 0
-        #while j < len(good_ntones):
-            #i = 0
-            #while i < acc_periods:
-                #ph_new.append((ph_table_new[j])[i])
-                #i = i + 1
-            #j = j + 1
-        #############################################################
-
         li = []
 
         f, axar = plt.subplots(2)
