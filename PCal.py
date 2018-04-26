@@ -637,7 +637,6 @@ def pcal_delay(ifile, ntones, itype, dbg):
     
     else:
         li = []
-
         f, axar = plt.subplots(2)
         axar[0].grid()
 
@@ -652,7 +651,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
             if dbg == 'true':
                 axar[0].plot(time, ph1)
                 plt.pause(0.001)
-                axar[0].set_xlabel('time')
+                axar[0].set_xlabel('time, us')
                 axar[0].set_ylabel('amplitude')
                 
             number = max(izip(ph1, count()))[1]
@@ -686,22 +685,24 @@ def pcal_delay(ifile, ntones, itype, dbg):
             
             tau_min = j0 - 1
             tau_max = j0 + 1
-
+            
             delta_tau = 0.1
             while delta_tau >= 5e-4:
                 tau = tau_min
             
                 tau_list = []
                 cj = []
-            
+
+                res = (np.asarray(ph).real)[(j * counter) : (j * counter + counter)]
+                ims = (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)]
+                
                 while tau <= tau_max:
-                    im, re = Fraq_FFT(file_read(ifile), (np.asarray(ph).real)[(j * counter) : (j * counter + counter)], (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)], tau, 1)
+                    im, re = Fraq_FFT(file_read(ifile), res, ims, tau, 1)
                 
                     cj.append(complex(re, im))
                     tau_list.append(tau)
 
                     tau = tau + delta_tau
-                
                 cj = abs(np.asarray(cj))
 
                 number = max(izip(cj, count()))[1]
