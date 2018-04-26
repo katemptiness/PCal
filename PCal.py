@@ -709,8 +709,8 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 tau_min = tau - delta_tau * 2
                 tau_max = tau + delta_tau * 2
                 
-                if delta_tau == 1e-3:
-                    delta_tau = delta_tau / 2
+                if delta_tau == 1e-2:
+                    delta_tau = delta_tau / 20
                 else:
                     delta_tau = delta_tau / 10
 
@@ -729,11 +729,11 @@ def pcal_delay(ifile, ntones, itype, dbg):
                 
                 plt.pause(0.001)
                 
-                axar[1].plot(xlist, li)
-                axar[1].plot(xlist, li, 'o')
+                axar[1].plot(xlist, np.asarray(li) * 1e6)
+                axar[1].plot(xlist, np.asarray(li) * 1e6, 'o')
                 axar[1].grid()
                 axar[1].set_xlabel('accumulation periods')
-                axar[1].set_ylabel('time delay')
+                axar[1].set_ylabel('time delay, ps')
                 plt.gcf().canvas.set_window_title('Signal view & time delays')
                 plt.draw()
             
