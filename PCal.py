@@ -357,8 +357,6 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
     counter = len(ntones)
 
     table = (np.empty((counter, 0))).tolist()
-    table2 = (np.empty((counter, 0))).tolist()
-    ph_table = (np.empty((counter, 0))).tolist()
 
     ph = []
     
@@ -371,20 +369,13 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
                 table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
             elif itype == 'amplitude':
                 table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
-            elif itype == 'phase-amplitude':
-                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
-                table2[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
-            #ph_table[i].append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
             i = i + 1
         j = j + 1
 
     ifile.close()
     
-    if itype == 'phase-amplitude':
-        return 
-    else:
-        return table
+    return table
     
 
 def pcal_reading(ifile, ntone, itype, dbg, acc_period):
@@ -627,126 +618,118 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
 
 
 def pcal_delay(ifile, ntones, itype, dbg):
-    if itype == 'phase-amplitude':
-        plt.plot(table, table2, 'o')
-        plt.grid()
-        plt.xlabel('phase')
-        plt.ylabel('amplitude')
-        plt.gcf().canvas.set_window_title('Amplitude of phase graph')
-        plt.show()
-    
-    else:
-        li = []
-        f, axar = plt.subplots(2)
-        axar[0].grid()
+    li = []
+    f, axar = plt.subplots(2)
+    axar[0].grid()
 
-        time = np.linspace((1 / counter), 1, counter)
+    time = np.linspace((1 / counter), 1, counter)
 
-        ampls = []
+    ampls = []
 
-        j = 0
-        while j < acc_periods:
-            ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
+    j = 0
+    while j < acc_periods:
+        ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
             
-            if dbg == 'true':
-                axar[0].plot(time, ph1)
-                plt.pause(0.001)
-                axar[0].set_xlabel('time, us')
-                axar[0].set_ylabel('amplitude')
+        if dbg == 'true':
+            axar[0].plot(time, ph1)
+            plt.pause(0.001)
+            axar[0].set_xlabel('time, us')
+            axar[0].set_ylabel('amplitude')
                 
-            number = max(izip(ph1, count()))[1]
+        number = max(izip(ph1, count()))[1]
 
-            ampl = ph1[number]
+        ampl = ph1[number]
             
-            noise = []
-            if number >= 250:
-                i = 0
-                while i < (number - 100):
-                    noise.append(ph1[i])
-                    i = i + 1
-            elif number < 250:
-                i = (file_read(ifile) - 1)
-                while i > (number + 100):
-                    noise.append(ph1[i])
-                    i = i - 1
+        noise = []
+        if number >= 250:
+            i = 0
+            while i < (number - 100):
+                noise.append(ph1[i])
+                i = i + 1
+        elif number < 250:
+            i = (file_read(ifile) - 1)
+            while i > (number + 100):
+                noise.append(ph1[i])
+                i = i - 1
 
-            m = np.mean(noise)
+        m = np.mean(noise)
 
-            snr = ((ampl - m) / np.std(np.asarray(noise) - m))
+        snr = ((ampl - m) / np.std(np.asarray(noise) - m))
 
-            sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
+        sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
 
-            j0 = number
+        j0 = number
 
-            if j == 0:
-                j1 = ("%.6f" % (((j0 * 1e-6) / 512) * 1e6))
-                print '\nThe time delay is about', j1, 'microseconds \n'
-                print 'Starting the calculation...'
+        if j == 0:
+            j1 = ("%.6f" % (((j0 * 1e-6) / 512) * 1e6))
+            print '\nThe time delay is about', j1, 'microseconds \n'
+            print 'Starting the calculation...'
             
-            tau_min = j0 - 1
-            tau_max = j0 + 1
+        tau_min = j0 - 1
+        tau_max = j0 + 1
             
-            delta_tau = 0.1
-            while delta_tau >= 5e-4:
-                tau = tau_min
+        delta_tau = 0.1
+        while delta_tau >= 5e-4:
+            tau = tau_min
             
-                tau_list = []
-                cj = []
+            tau_list = []
+            cj = []
 
-                res = (np.asarray(ph).real)[(j * counter) : (j * counter + counter)]
-                ims = (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)]
+            res = (np.asarray(ph).real)[(j * counter) : (j * counter + counter)]
+            ims = (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)]
                 
-                while tau <= tau_max:
-                    im, re = Fraq_FFT(file_read(ifile), res, ims, tau, 1)
+            while tau <= tau_max:
+                im, re = Fraq_FFT(file_read(ifile), res, ims, tau, 1)
                 
-                    cj.append(complex(re, im))
-                    tau_list.append(tau)
+                cj.append(complex(re, im))
+                tau_list.append(tau)
 
-                    tau = tau + delta_tau
-                cj = abs(np.asarray(cj))
-
-                number = max(izip(cj, count()))[1]
-                tau = tau_list[number]
-                tau_min = tau - delta_tau * 2
-                tau_max = tau + delta_tau * 2
-                
-                if delta_tau == 1e-2:
-                    delta_tau = delta_tau / 20
-                else:
-                    delta_tau = delta_tau / 10
-
-            tau = tau / 512
-            tau = float("%.6f" % (tau))
-
-            sys.stdout.write(' accumulation periods have been processed...' + ('\r%d'%(j + 1) + '/' + str(acc_periods)))
-            sys.stdout.flush()
-
-            li.append(tau)
-
-            if dbg == 'true':
-                xlist = np.linspace(1, (j + 1), (j + 1))
-                
-                axar[1].cla()
-                
-                plt.pause(0.001)
-                
-                axar[1].plot(xlist, np.asarray(li) * 1e6)
-                axar[1].plot(xlist, np.asarray(li) * 1e6, 'o')
-                axar[1].grid()
-                axar[1].set_xlabel('accumulation periods')
-                axar[1].set_ylabel('time delay, ps')
-                plt.gcf().canvas.set_window_title('Signal view & time delays')
-                plt.draw()
+                tau = tau + delta_tau
             
-            j = j + 1
-        
-        tau = "%.6f" % (np.mean(li))
+            cj = abs(np.asarray(cj))
 
-        print '\nAnd the clarified time delay is', tau, 'microseconds'
+            number = max(izip(cj, count()))[1]
+            tau = tau_list[number]
+            tau_min = tau - delta_tau * 2
+            tau_max = tau + delta_tau * 2
+                
+            if delta_tau == 1e-2:
+                delta_tau = delta_tau / 20
+            else:
+                delta_tau = delta_tau / 10
+
+        tau = tau / 512
+        tau = float("%.6f" % (tau))
+
+        sys.stdout.write(' accumulation periods have been processed...' + ('\r%d'%(j + 1) + '/' + str(acc_periods)))
+        sys.stdout.flush()
+
+        li.append(tau)
 
         if dbg == 'true':
+            xlist = np.linspace(1, (j + 1), (j + 1))
+                
+            axar[1].cla()
+                
+            plt.pause(0.001)
+                
+            axar[1].plot(xlist, np.asarray(li) * 1e6)
+            axar[1].plot(xlist, np.asarray(li) * 1e6, 'o')
+            axar[1].grid()
+            axar[1].set_xlabel('accumulation periods')
+            axar[1].set_ylabel('time delay, ps')
             plt.gcf().canvas.set_window_title('Signal view & time delays')
-            plt.show(block = False)
+            plt.draw()
+            
+        j = j + 1
+        
+    tau = "%.6f" % (np.mean(li))
+
+    print '\nAnd the clarified time delay is', tau, 'microseconds'
+
+    if dbg == 'true':
+        plt.gcf().canvas.set_window_title('Signal view & time delays')
+        plt.show(block = False)
 
     return li
 
