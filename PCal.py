@@ -775,9 +775,9 @@ def pcal_diff(a, b):
 
     if dbg == 'true':
         plt.figure(3)
-        plt.plot(xlist, trend)
         plt.plot(xlist, diff)
         plt.plot(xlist, diff, 'o')
+        plt.plot(xlist, trend)
         plt.grid()
         plt.xlabel('accumulation periods')
         plt.ylabel('difference between time delays, ps')
