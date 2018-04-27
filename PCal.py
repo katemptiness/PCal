@@ -496,7 +496,7 @@ def pcal_reading(ifile, ntone, itype, dbg, acc_period):
 def pcal_phaseresponse(ifile, ntones, itype, dbg):
     global trends, std, new_table
 
-    if dbg == 'true' and what == '2':
+    if dbg == 'true':
         f, axar = plt.subplots(4)
 
     time = np.linspace(0, accumulation_period * acc_periods, acc_periods)
@@ -540,7 +540,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         re_table = []
         i = i + 1
             
-    if dbg == 'true' and what == '2':
+    if dbg == 'true':
         plt.figure(1)
         axar[0].grid()
         axar[0].set_xlabel('time')
@@ -595,29 +595,25 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
 
     good_ntones = np.asarray(good_ntones)
 
-    if what == '2':
-        i = 0
-        while i < len(good_ntones):
-            li.append(np.mean(good_table[i]))
-            i = i + 1
-
-        plt.figure(2)
-        plt.plot(good_ntones, unwraping2(li))
-        plt.plot(good_ntones, unwraping2(li), 'o')
+    i = 0
+    while i < len(good_ntones):
+        li.append(np.mean(good_table[i]))
+        i = i + 1
+        
+    plt.figure(2)
+    plt.plot(good_ntones, unwraping2(li))
+    plt.plot(good_ntones, unwraping2(li), 'o')
     
-        if dbg == 'true':
-            plt.figure(2)
-            plt.grid()
-            plt.xlabel('frequency')
-            if itype == 'phase-amplitude':
-                plt.ylabel('phase')
-            else:
-                plt.ylabel(itype)
-            plt.gcf().canvas.set_window_title('Phase-frequency responce')
-            plt.show()
+    if dbg == 'true':
+        plt.figure(2)
+        plt.grid()
+        plt.xlabel('frequency')
+        plt.ylabel(itype)
+        plt.gcf().canvas.set_window_title('Phase-frequency responce')
+        plt.show()
 
 
-def pcal_delay(ifile, ntones, itype, dbg):
+def pcal_delay(ifile, ntones, itype, dbg, qwerty):
     li = []
     f, axar = plt.subplots(2)
     axar[0].grid()
@@ -729,7 +725,10 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
     if dbg == 'true':
         plt.gcf().canvas.set_window_title('Signal view & time delays')
-        plt.show(block = False)
+        if qwerty == '0':
+            plt.show(block = False)
+        elif qwerty == '1':
+            plt.show()
 
     return li
 
@@ -780,17 +779,19 @@ if __name__ == '__main__':
 
     print '\nNow tell me what you want to do:'
     print 'press 1 if uou want to plot signal and see the time delay;'
-    print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response.'
+    print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response;'
     print 'press 3 if you want to see the difference between time delays in 2 different files.'
     
-    global what
+    global what, qwerty
     what = raw_input()
     if what == '2':
         pcal_phaseresponse(ifile, ntones, itype, dbg)
     elif what == '1':
-        pcal_delay(ifile, ntones, itype, dbg)
+        qwerty = '1'
+        pcal_delay(ifile, ntones, itype, dbg, qwerty)
     elif what == '3':
-        a = pcal_delay(ifile, ntones, itype, dbg)
+        qwerty = '0'
+        a = pcal_delay(ifile, ntones, itype, dbg, qwerty)
         
         print '\nPlease enter the 2nd file...'
         new_ifile = raw_input()
@@ -801,7 +802,7 @@ if __name__ == '__main__':
         else:
             pcal_reading(new_ifile, ntone, itype, dbg, acc_period)
         
-        b = pcal_delay(new_ifile, ntones, itype, dbg)
+        b = pcal_delay(new_ifile, ntones, itype, dbg, qwerty)
 
         pcal_diff(a, b)
 
