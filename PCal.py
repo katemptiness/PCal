@@ -680,7 +680,7 @@ def pcal_delay(ifile, ntones, itype, dbg):
 
             if j == 0:
                 j1 = ("%.6f" % (((j0 * 1e-6) / 512) * 1e6))
-                print 'The time delay is about', j1, 'microseconds \n'
+                print '\nThe time delay is about', j1, 'microseconds \n'
                 print 'Starting the calculation...'
             
             tau_min = j0 - 1
@@ -747,10 +747,42 @@ def pcal_delay(ifile, ntones, itype, dbg):
         if dbg == 'true':
             plt.gcf().canvas.set_window_title('Signal view & time delays')
             plt.show(block = False)
-        
-            print '\nDo you wanna see all the time delays? (y / n)'
-            if raw_input() == 'y':
-                print li, '(microseconds)'
+
+    return li
+
+
+def pcal_diff(a, b):
+    if len(a) > len(b):
+        d = len(a) - len(b)
+        while d > 0:
+            del a[-1]
+            d = d - 1
+    elif len(b) > len(a):
+        d = len(b) - len(a)
+        while d > 0:
+            del b[-1]
+            d = d - 1
+
+    diff = abs(np.asarray(a) - np.asarray(b)) * 1e6
+
+    xlist = np.linspace(1, len(a), len(a))
+
+    A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
+    m, c = linalg.lstsq(A, diff)[0]
+    trend = m * xlist + c
+    
+    print '\nThe slope of trend line is', "%.3f" % (m)
+
+    if dbg == 'true':
+        plt.figure(3)
+        plt.plot(xlist, trend)
+        plt.plot(xlist, diff)
+        plt.plot(xlist, diff, 'o')
+        plt.grid()
+        plt.xlabel('accumulation periods')
+        plt.ylabel('difference between time delays, ps')
+        plt.gcf().canvas.set_window_title('Difference between time delays')
+        plt.show()
 
 
 if __name__ == '__main__':
@@ -766,6 +798,7 @@ if __name__ == '__main__':
     print '\nNow tell me what you want to do:'
     print 'press 1 if uou want to plot signal and see the time delay;'
     print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response.'
+    print 'press 3 if you want to see the difference between time delays in 2 different files.'
     
     global what
     what = raw_input()
@@ -773,5 +806,21 @@ if __name__ == '__main__':
         pcal_phaseresponse(ifile, ntones, itype, dbg)
     elif what == '1':
         pcal_delay(ifile, ntones, itype, dbg)
+    elif what == '3':
+        a = pcal_delay(ifile, ntones, itype, dbg)
+        
+        print '\nPlease enter the 2nd file...'
+        new_ifile = raw_input()
+        
+        where_to_go = open(ifile)
+        if (where_to_go.readline())[0] == '#':
+            pcal_read(new_ifile, ntone, itype, dbg, acc_period)
+        else:
+            pcal_reading(new_ifile, ntone, itype, dbg, acc_period)
+        
+        b = pcal_delay(new_ifile, ntones, itype, dbg)
+
+        pcal_diff(a, b)
+
     else:
         print 'Error, please try again.'
