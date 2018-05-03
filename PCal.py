@@ -100,8 +100,8 @@ def usage():
 def unwraping(lista):
     k = 0
     while k < (len(lista) - 1):
+        
         if abs(lista[k] - lista[k + 1]) > 340:
-
             list1 = []
             list2 = []
         
@@ -500,19 +500,17 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         f, axar = plt.subplots(4)
 
     time = np.linspace(0, accumulation_period * acc_periods, acc_periods)
-
     trends = []
-
     i = 0
     while i < counter:
         A = (np.vstack([time, np.ones(len(time))])).transpose()
-        m, c = linalg.lstsq(A, unwraping(table[i - 1]))[0]
+        m, c = linalg.lstsq(A, unwraping(unwraping(table[i - 1])))[0]
         trend = m * time + c
         trends.append(trend)
                 
         if dbg == 'true':
             plt.figure(1)
-            axar[0].plot(time, unwraping(table[i - 1]), 'o')
+            axar[0].plot(time, unwraping(unwraping(table[i - 1])), 'o')
             axar[0].plot(time, trend)
         
         i = i + 1
