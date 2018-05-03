@@ -33,14 +33,15 @@ def file_read(ifile):
 
     
 def main():
-    global itype, dbg, ntone, ifile, acc_period
+    global itype, dbg, ntone, ifile, acc_period, write
 
     itype = 'phase'
     dbg = 'false'
     acc_period = None
+    write = 'false'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:a:', ['ifile=', 'ntone=', 'itype=', 'dbg=', 'acc_period='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:t:d:a:w:', ['ifile=', 'ntone=', 'itype=', 'dbg=', 'acc_period=', 'write='])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -69,6 +70,11 @@ def main():
                 dbg = arg[1:]
             else:
                 dbg = arg
+        elif opt in ('-w', '--write'):
+            if arg[0] == ' ':
+                write = arg[1:]
+            else:
+                write = arg
         elif opt in ('-a', '--acc_period'):
             if arg[0] == ' ':
                 acc_period = int(arg[1:])
@@ -87,12 +93,13 @@ def usage():
     print '-n is for tone numbers;'
     print '-a is for accumulation periods;'
     print '-t is for data type (amplitudes or phases);'
-    print '-d is for graphics display mode (true or false).'
+    print '-d is for graphics display mode (true or false);'
+    print '-w is for delays recording (true or false).'
     print
     print 'For example:'
-    print 'python PCal.py -f W:/Files/My_File -n "1 : 512" -a "20" -t phase - d true'
+    print 'python PCal.py -f W:/Files/My_File -n "1 : 512" -a "20" -t phase - d true -w true'
     print
-    print '-n, -a, -t & -d parameters are "1 : last", "all", "phase" & "false" as default, so you can only use -f.'
+    print '-n, -a, -t, -d & -w parameters are "1 : last", "all", "phase", "false" & "false" as default, so you can only use -f.'
     print
     print 'Warning: -a parameter (accumulation periods) should be more than 1!'
 
@@ -611,7 +618,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         plt.show()
 
 
-def pcal_delay(ifile, ntones, itype, dbg, qwerty):
+def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
     li = []
     f, axar = plt.subplots(2)
     axar[0].grid()
@@ -728,6 +735,18 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty):
         elif qwerty == '1':
             plt.show()
 
+    if write == 'true':
+        if poiuy == '0':
+            name = ifile + '_delays.txt'
+        elif poiuy == '1':
+            name = new_ifile + '_delays.txt'
+        f = open(name, 'w')
+        k = 0
+        while k < len(li):
+            f.write(str(li[k]))
+            f.write('\n')
+            k = k + 1
+
     return li
 
 
@@ -768,7 +787,7 @@ def pcal_diff(a, b):
 if __name__ == '__main__':
     main()
     print 'Hello. Welcome to PCal. Please wait until your file will be ready.'
-    
+
     where_to_go = open(ifile)
     if (where_to_go.readline())[0] == '#':
         pcal_read(ifile, ntone, itype, dbg, acc_period)
@@ -780,16 +799,17 @@ if __name__ == '__main__':
     print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response;'
     print 'press 3 if you want to see the difference between time delays in 2 different files.'
     
-    global what, qwerty
+    global what, qwerty, poiuy
     what = raw_input()
     if what == '2':
         pcal_phaseresponse(ifile, ntones, itype, dbg)
     elif what == '1':
         qwerty = '1'
-        pcal_delay(ifile, ntones, itype, dbg, qwerty)
+        pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
     elif what == '3':
         qwerty = '0'
-        a = pcal_delay(ifile, ntones, itype, dbg, qwerty)
+        poiuy = '0'
+        a = pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
         
         print '\nPlease enter the 2nd file...'
         new_ifile = raw_input()
@@ -800,7 +820,8 @@ if __name__ == '__main__':
         else:
             pcal_reading(new_ifile, ntone, itype, dbg, acc_period)
         
-        b = pcal_delay(new_ifile, ntones, itype, dbg, qwerty)
+        poiuy = '1'
+        b = pcal_delay(new_ifile, ntones, itype, dbg, qwerty, write)
 
         pcal_diff(a, b)
 
