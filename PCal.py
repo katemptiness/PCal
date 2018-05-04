@@ -104,6 +104,10 @@ def usage():
     print 'Warning: -a parameter (accumulation periods) should be more than 1!'
 
 
+#def pcal_time(seconds):
+    #return seconds // 3600, seconds // 60 % 60, seconds % 60
+
+
 def unwraping(lista):
     k = 0
     while k < (len(lista) - 1):
@@ -624,8 +628,19 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
     axar[0].grid()
 
     time = np.linspace((1 / counter), 1, counter)
+    
+    #n1 = (ifile.find('PCAL_') + 5)
+    #n2 = (ifile.find('V') - 2)
+    #seconds = ifile[n1 : n2]
+    #n1 = (seconds.find('_') + 1)
+    #seconds = int(seconds[n1 : n2])
+
+    #ime_start = pcal_time(seconds)
+    
+    #times = []
 
     ampls = []
+    xlist = []
 
     j = 0
     while j < acc_periods:
@@ -670,7 +685,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
         tau_max = j0 + 1
             
         delta_tau = 0.1
-        while delta_tau >= 5e-4:
+        while delta_tau >= 5e-5:
             tau = tau_min
             
             tau_list = []
@@ -694,7 +709,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
             tau_min = tau - delta_tau * 2
             tau_max = tau + delta_tau * 2
                 
-            if delta_tau == 1e-2:
+            if delta_tau == 1e-3:
                 delta_tau = delta_tau / 20
             else:
                 delta_tau = delta_tau / 10
@@ -707,17 +722,28 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
 
         li.append(tau)
 
+        #t = pcal_time(seconds)
+        
+        #t1 = str(t[0]).replace('.0', '')
+        #t2 = str(t[1]).replace('.0', '')
+        #t3 = str(t[2]).replace('.0', '')
+
+        #t = t1 + ':' + t2 + ':' + t3
+        
+        #times.append(t)
+
+        #seconds = seconds + 0.5
+
         if dbg == 'true':
-            xlist = np.linspace(1, (j + 1), (j + 1))
-                
+            xlist.append(j * 0.5)
+
             axar[1].cla()
                 
             plt.pause(0.001)
-                
-            axar[1].plot(xlist, np.asarray(li) * 1e6)
+            
             axar[1].plot(xlist, np.asarray(li) * 1e6, 'o')
             axar[1].grid()
-            axar[1].set_xlabel('accumulation periods')
+            axar[1].set_xlabel('time, s')
             axar[1].set_ylabel('time delay, ps')
             plt.gcf().canvas.set_window_title('Signal view & time delays')
             plt.draw()
