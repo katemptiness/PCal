@@ -54,7 +54,8 @@ def main():
                 ifile = arg[1:]
             else:
                 ifile = arg
-                ntone = '1 : ' + str(file_read(ifile))
+                if os.path.isfile(ifile):
+                    ntone = '1 : ' + str(file_read(ifile))
         elif opt in ('-n', '--ntone'):
             if arg[0] == ' ':
                 ntone = arg[1:]
@@ -102,10 +103,6 @@ def usage():
     print '-n, -a, -t, -d & -w parameters are "1 : last", "all", "phase", "false" & "false" as default, so you can only use -f.'
     print
     print 'Warning: -a parameter (accumulation periods) should be more than 1!'
-
-
-#def pcal_time(seconds):
-    #return seconds // 3600, seconds // 60 % 60, seconds % 60
 
 
 def unwraping(lista):
@@ -628,16 +625,6 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
     axar[0].grid()
 
     time = np.linspace((1 / counter), 1, counter)
-    
-    #n1 = (ifile.find('PCAL_') + 5)
-    #n2 = (ifile.find('V') - 2)
-    #seconds = ifile[n1 : n2]
-    #n1 = (seconds.find('_') + 1)
-    #seconds = int(seconds[n1 : n2])
-
-    #ime_start = pcal_time(seconds)
-    
-    #times = []
 
     ampls = []
     xlist = []
@@ -722,18 +709,6 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
 
         li.append(tau)
 
-        #t = pcal_time(seconds)
-        
-        #t1 = str(t[0]).replace('.0', '')
-        #t2 = str(t[1]).replace('.0', '')
-        #t3 = str(t[2]).replace('.0', '')
-
-        #t = t1 + ':' + t2 + ':' + t3
-        
-        #times.append(t)
-
-        #seconds = seconds + 0.5
-
         if dbg == 'true':
             xlist.append(j * 0.5)
 
@@ -766,6 +741,10 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
             name = ifile + '_delays.txt'
         elif poiuy == '1':
             name = new_ifile + '_delays.txt'
+        elif poiuy == '2':
+            name = files[global_ch] + '_delays.txt'
+        elif poiuy == '3':
+            name = files[global_ch + 1] + '_delays.txt'
         f = open(name, 'w')
         k = 0
         while k < len(li):
@@ -811,45 +790,99 @@ def pcal_diff(a, b):
 
 
 if __name__ == '__main__':
+    global what, qwerty, poiuy, files, global_ch
     main()
-    print 'Hello. Welcome to PCal. Please wait until your file will be ready.'
 
-    where_to_go = open(ifile)
-    if (where_to_go.readline())[0] == '#':
-        pcal_read(ifile, ntone, itype, dbg, acc_period)
-    else:
-        pcal_reading(ifile, ntone, itype, dbg, acc_period)
+    if os.path.isfile(ifile):
 
-    print '\nNow tell me what you want to do:'
-    print 'press 1 if uou want to plot signal and see the time delay;'
-    print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response;'
-    print 'press 3 if you want to see the difference between time delays in 2 different files.'
-    
-    global what, qwerty, poiuy
-    what = raw_input()
-    if what == '2':
-        pcal_phaseresponse(ifile, ntones, itype, dbg)
-    elif what == '1':
-        qwerty = '1'
-        pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
-    elif what == '3':
-        qwerty = '0'
-        poiuy = '0'
-        a = pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
-        
-        print '\nPlease enter the 2nd file...'
-        new_ifile = raw_input()
-        
+        print 'Hello. Welcome to PCal. Please wait until your file will be ready.'
+
         where_to_go = open(ifile)
         if (where_to_go.readline())[0] == '#':
-            pcal_read(new_ifile, ntone, itype, dbg, acc_period)
+            pcal_read(ifile, ntone, itype, dbg, acc_period)
         else:
-            pcal_reading(new_ifile, ntone, itype, dbg, acc_period)
+            pcal_reading(ifile, ntone, itype, dbg, acc_period)
+
+        print '\nNow tell me what you want to do:'
+        print 'press 1 if uou want to plot signal and see the time delay;'
+        print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response;'
+        print 'press 3 if you want to see the difference between time delays in 2 different files.'
+    
+        what = raw_input()
+        if what == '2':
+            pcal_phaseresponse(ifile, ntones, itype, dbg)
+        elif what == '1':
+            qwerty = '1'
+            pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
+        elif what == '3':
+            qwerty = '0'
+            poiuy = '0'
+            a = pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
         
-        poiuy = '1'
-        b = pcal_delay(new_ifile, ntones, itype, dbg, qwerty, write)
+            print '\nPlease enter the 2nd file...'
+            new_ifile = raw_input()
+        
+            where_to_go = open(ifile)
+            if (where_to_go.readline())[0] == '#':
+                pcal_read(new_ifile, ntone, itype, dbg, acc_period)
+            else:
+                pcal_reading(new_ifile, ntone, itype, dbg, acc_period)
+        
+            poiuy = '1'
+            b = pcal_delay(new_ifile, ntones, itype, dbg, qwerty, write)
 
-        pcal_diff(a, b)
+            pcal_diff(a, b)
 
-    else:
-        print 'Error, please try again.'
+        else:
+            print 'Error, please try again.'
+
+    elif os.path.isdir(ifile):
+        qwerty = '0'
+                
+        all_files = os.listdir(ifile)
+
+        files = []
+
+        i = 0
+        while i < len(all_files):
+            
+            if (all_files[i])[0:5] == 'PCAL_' and (all_files[i])[-1] == 'V':
+                files.append(ifile + all_files[i])
+            
+            i = i + 1
+
+        files = sorted(files)
+
+        try:
+            global_ch = 0
+            while global_ch < (len(files) - 1):
+                pcal_read(files[global_ch], ntone, itype, dbg, acc_period)
+                poiuy = '2'
+                a = pcal_delay(files[global_ch], ntones, itype, dbg, qwerty, write)
+
+                pcal_read(files[global_ch + 1], ntone, itype, dbg, acc_period)
+                poiuy = '3'
+                b = pcal_delay(files[global_ch + 1], ntones, itype, dbg, qwerty, write)
+
+                if (files[global_ch])[0 : 17] == (files[global_ch + 1])[0 : 17]:
+                    pcal_diff(a, b)
+
+                global_ch = global_ch + 2
+        
+        except NameError:
+            ntone = '1 : 512'
+            
+            global_ch = 0
+            while global_ch < (len(files) - 1):
+                pcal_read(files[global_ch], ntone, itype, dbg, acc_period)
+                poiuy = '2'
+                a = pcal_delay(files[global_ch], ntones, itype, dbg, qwerty, write)
+
+                pcal_read(files[global_ch + 1], ntone, itype, dbg, acc_period)
+                poiuy = '3'
+                b = pcal_delay(files[global_ch + 1], ntones, itype, dbg, qwerty, write)
+
+                if (files[global_ch])[0 : 17] == (files[global_ch + 1])[0 : 17]:
+                    pcal_diff(a, b)
+
+                global_ch = global_ch + 2
