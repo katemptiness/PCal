@@ -90,7 +90,7 @@ def usage():
     print 'Hello, this is the USAGE function.'
     print
     print 'You can use this forms to work:'
-    print '-f is for path to the file;'
+    print '-f is for path to the file or directory;'
     print '-n is for tone numbers;'
     print '-a is for accumulation periods;'
     print '-t is for data type (amplitudes or phases);'
