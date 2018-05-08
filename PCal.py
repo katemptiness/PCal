@@ -720,7 +720,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
             axar[1].grid()
             axar[1].set_xlabel('time, s')
             axar[1].set_ylabel('time delay, ps')
-            plt.gcf().canvas.set_window_title('Signal view & time delays')
+            plt.gcf().canvas.set_window_title(ifile)
             plt.draw()
             
         j = j + 1
@@ -730,21 +730,14 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
     print '\nAnd the clarified time delay is', tau, 'microseconds'
 
     if dbg == 'true':
-        plt.gcf().canvas.set_window_title('Signal view & time delays')
+        plt.gcf().canvas.set_window_title(ifile)
         if qwerty == '0':
             plt.show(block = False)
         elif qwerty == '1':
             plt.show()
 
     if write == 'true':
-        if poiuy == '0':
-            name = ifile + '_delays.txt'
-        elif poiuy == '1':
-            name = new_ifile + '_delays.txt'
-        elif poiuy == '2':
-            name = files[global_ch] + '_delays.txt'
-        elif poiuy == '3':
-            name = files[global_ch + 1] + '_delays.txt'
+        name = ifile + '_delays.txt'
         f = open(name, 'w')
         k = 0
         while k < len(li):
@@ -779,7 +772,6 @@ def pcal_diff(a, b):
 
     if dbg == 'true':
         plt.figure(3)
-        plt.plot(xlist, diff)
         plt.plot(xlist, diff, 'o')
         plt.plot(xlist, trend)
         plt.grid()
@@ -790,7 +782,7 @@ def pcal_diff(a, b):
 
 
 if __name__ == '__main__':
-    global what, qwerty, poiuy, files, global_ch
+    global what, qwerty, files
     main()
 
     if os.path.exists(ifile):
@@ -819,7 +811,6 @@ if __name__ == '__main__':
                 pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
             elif what == '3':
                 qwerty = '0'
-                poiuy = '0'
                 a = pcal_delay(ifile, ntones, itype, dbg, qwerty, write)
         
                 print '\nPlease enter the 2nd file...'
@@ -831,7 +822,6 @@ if __name__ == '__main__':
                 else:
                     pcal_reading(new_ifile, ntone, itype, dbg, acc_period)
         
-                poiuy = '1'
                 b = pcal_delay(new_ifile, ntones, itype, dbg, qwerty, write)
 
                 pcal_diff(a, b)
@@ -863,37 +853,35 @@ if __name__ == '__main__':
                 files = sorted(files)
 
                 try:
-                    global_ch = 0
-                    while global_ch < (len(files) - 1):
-                        pcal_read(files[global_ch], ntone, itype, dbg, acc_period)
-                        poiuy = '2'
-                        a = pcal_delay(files[global_ch], ntones, itype, dbg, qwerty, write)
+                    i = 0
+                    while i < (len(files) - 1):
+                        pcal_read(files[i], ntone, itype, dbg, acc_period)
+                        a = pcal_delay(files[i], ntones, itype, dbg, qwerty, write)
 
-                        pcal_read(files[global_ch + 1], ntone, itype, dbg, acc_period)
-                        poiuy = '3'
-                        b = pcal_delay(files[global_ch + 1], ntones, itype, dbg, qwerty, write)
+                        pcal_read(files[i + 1], ntone, itype, dbg, acc_period)
+                        b = pcal_delay(files[i + 1], ntones, itype, dbg, qwerty, write)
 
-                        if (files[global_ch])[0 : 17] == (files[global_ch + 1])[0 : 17]:
+                        if (files[i])[0 : 17] == (files[i + 1])[0 : 17]:
                             pcal_diff(a, b)
 
-                        global_ch = global_ch + 2
+                        i = i + 2
         
                 except NameError:
                     ntone = '1 : 512'
             
-                    global_ch = 0
-                    while global_ch < (len(files) - 1):
-                        pcal_read(files[global_ch], ntone, itype, dbg, acc_period)
+                    i = 0
+                    while i < (len(files) - 1):
+                        pcal_read(files[i], ntone, itype, dbg, acc_period)
                         poiuy = '2'
-                        a = pcal_delay(files[global_ch], ntones, itype, dbg, qwerty, write)
+                        a = pcal_delay(files[i], ntones, itype, dbg, qwerty, write)
 
-                        pcal_read(files[global_ch + 1], ntone, itype, dbg, acc_period)
+                        pcal_read(files[i + 1], ntone, itype, dbg, acc_period)
                         poiuy = '3'
-                        b = pcal_delay(files[global_ch + 1], ntones, itype, dbg, qwerty, write)
+                        b = pcal_delay(files[i + 1], ntones, itype, dbg, qwerty, write)
 
-                        if (files[global_ch])[0 : 17] == (files[global_ch + 1])[0 : 17]:
+                        if (files[i])[0 : 17] == (files[i + 1])[0 : 17]:
                             pcal_diff(a, b)
 
-                        global_ch = global_ch + 2
+                        i = i + 2
     else:
         print 'Sorry, file or directory was not found. Please try again'
