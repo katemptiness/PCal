@@ -826,6 +826,9 @@ if __name__ == '__main__':
 
                 pcal_diff(a, b)
 
+            elif what == '4':
+                sys.exit()
+
             else:
                 print 'Error, please try again.'
 
@@ -883,5 +886,9 @@ if __name__ == '__main__':
                             pcal_diff(a, b)
 
                         i = i + 2
+
+            elif mode == '2':
+                sys.exit()
+
     else:
         print 'Sorry, file or directory was not found. Please try again'
