@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np, numpy.linalg as linalg
 import matplotlib.pyplot as plt
 import getopt, sys
@@ -9,12 +11,19 @@ def main():
     try:
 	opts, args = getopt.getopt(sys.argv[1:], 'hf:', ['files='])
     except getopt.GetoptError:
+	usage()
 	sys.exit(2)
     for opt, arg in opts:
 	if opt in ('-h', '--help'):
+	    usage()
 	    sys.exit()
 	elif opt in ('-f', '--files'):
 	    files = arg
+
+
+def usage():
+    print 'Use -f for path to your files'
+
 
 def reading(files):
     all_files = os.listdir(files)
@@ -30,6 +39,8 @@ def reading(files):
     li = []
     sp = []
     x1 = 0
+    ms = []
+    cs = []
     
     i = 0
     k = 0
@@ -67,6 +78,12 @@ def reading(files):
 	    A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
 	    m, c = linalg.lstsq(A, li, rcond = -1)[0]
 	    trend = m * xlist + c
+	    
+	    h = 0
+	    while h < lenn:
+		ms.append(m)
+		cs.append(c)
+		h = h + 1
 	
 	    plt.plot(xlist, li, 'o')
 	    plt.plot(xlist, trend)
@@ -75,6 +92,17 @@ def reading(files):
 	
 	k = k + 1
 	i = i + 2
+    
+    c = np.mean(cs)
+    m = np.mean(ms)
+
+    xlist = np.linspace(0, xlist[-1], 1000)
+
+    trend = m * xlist + c
+
+    plt.plot(xlist, trend)
+
+    print 'The slope is', m
     
     plt.grid()
     plt.xlabel('accumulation periods')
