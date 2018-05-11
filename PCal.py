@@ -767,7 +767,7 @@ def pcal_diff(a, b):
     xlist = np.linspace(1, len(a), len(a))
 
     A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
-    m, c = linalg.lstsq(A, diff, rcond = None)[0]
+    m, c = linalg.lstsq(A, diff, rcond = -1)[0]
     trend = m * xlist + c
     
     print '\nThe slope of trend line is', "%.3f" % (m)
