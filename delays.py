@@ -18,6 +18,7 @@ def main():
 
 def reading(files):
     all_files = os.listdir(files)
+    all_files = sorted(all_files)
     
     len_files = len(all_files)
     
@@ -27,17 +28,28 @@ def reading(files):
 	k = k + 1
     
     li = []
+    sp = []
+    x1 = 0
     
     i = 0
+    k = 0
     while i < len_files:
+	start = ((all_files[i]).find('PCAL_') + 5) + 6
+	stop = start + 6
+	
 	len1 = sum(1 for line in open(all_files[i]))
 	len2 = sum(1 for line in open(all_files[i + 1]))
 	
 	lenn = min(len1, len2)
 	
+	sp.append(float((all_files[i])[start : stop]))
+	if k > 0:
+	    space = (sp[k] - sp[k - 1]) * 2
+	
 	ifile1 = open(all_files[i])
 	ifile2 = open(all_files[i + 1])
 	
+	li = []
 	j = 0
 	while j < lenn:
 	    ch1 = float(ifile1.readline())
@@ -46,17 +58,24 @@ def reading(files):
 	    li.append(ch)
 	    j = j + 1
 	
+	x2 = x1 + lenn
+	
+	if k > 0:
+	
+	    xlist = np.linspace(x1, (x2 - 1), lenn)
+	
+	    A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
+	    m, c = linalg.lstsq(A, li, rcond = -1)[0]
+	    trend = m * xlist + c
+	
+	    plt.plot(xlist, li, 'o')
+	    plt.plot(xlist, trend)
+	
+	    x1 = x2 + space
+	
+	k = k + 1
 	i = i + 2
     
-    xlist = np.linspace(1, lenn * (i / 2), lenn * (i / 2))
-    A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
-    m, c = linalg.lstsq(A, li, rcond = -1)[0]
-    trend = m * xlist + c
-    
-    print '\nThe slope of trend line is', "%.3f" % (m)
-
-    plt.plot(xlist, li, 'o')
-    plt.plot(xlist, trend)
     plt.grid()
     plt.xlabel('accumulation periods')
     plt.ylabel('difference between time delays, ps')
