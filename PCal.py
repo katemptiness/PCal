@@ -512,7 +512,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
     i = 0
     while i < counter:
         A = (np.vstack([time, np.ones(len(time))])).transpose()
-        m, c = linalg.lstsq(A, unwraping(unwraping(table[i - 1])))[0]
+        m, c = linalg.lstsq(A, unwraping(unwraping(table[i - 1])), rcond = -1)[0]
         trend = m * time + c
         trends.append(trend)
                 
@@ -786,10 +786,6 @@ def pcal_diff(a, b):
 if __name__ == '__main__':
     global what, qwerty, files
     main()
-
-    if ifile[-1] != 'V' and ifile[-1] != '/':
-        ifile = ifile + '/'
-
 
     if os.path.exists(ifile):
 
