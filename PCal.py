@@ -621,8 +621,10 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
 
 def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
     li = []
-    f, axar = plt.subplots(2)
-    axar[0].grid()
+    
+    if dbg == 'true':
+        f, axar = plt.subplots(2)
+        axar[0].grid()
 
     time = np.linspace((1 / counter), 1, counter)
 
@@ -765,7 +767,7 @@ def pcal_diff(a, b):
     xlist = np.linspace(1, len(a), len(a))
 
     A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
-    m, c = linalg.lstsq(A, diff)[0]
+    m, c = linalg.lstsq(A, diff, rcond = None)[0]
     trend = m * xlist + c
     
     print '\nThe slope of trend line is', "%.3f" % (m)
