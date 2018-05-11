@@ -787,6 +787,10 @@ if __name__ == '__main__':
     global what, qwerty, files
     main()
 
+    if ifile[-1] != 'V' and ifile[-1] != '/':
+        ifile = ifile + '/'
+
+
     if os.path.exists(ifile):
 
         if os.path.isfile(ifile):
