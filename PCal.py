@@ -666,7 +666,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
         j0 = number
 
         if j == 0:
-            j1 = ("%.6f" % (((j0 * 1e-6) / 512) * 1e6))
+            j1 = ("%.7f" % (((j0 * 1e-6) / 512) * 1e6))
             print '\nThe time delay is about', j1, 'microseconds \n'
             print 'Starting the calculation...'
             
@@ -704,7 +704,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
                 delta_tau = delta_tau / 10
 
         tau = tau / 512
-        tau = float("%.6f" % (tau))
+        tau = float("%.7f" % (tau))
 
         sys.stdout.write(' accumulation periods have been processed...' + ('\r%d'%(j + 1) + '/' + str(acc_periods)))
         sys.stdout.flush()
@@ -727,7 +727,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
             
         j = j + 1
         
-    tau = "%.6f" % (np.mean(li))
+    tau = "%.7f" % (np.mean(li))
 
     print '\nAnd the clarified time delay is', tau, 'microseconds'
 
