@@ -772,6 +772,15 @@ def pcal_diff(a, b):
     
     print '\nThe slope of trend line is', "%.3f" % (m)
 
+    if write == 'true':
+        name = ifile[0:18] + 'diffs.txt'
+        f = open(name, 'w')
+        k = 0
+        while k < len(diff):
+            f.write(str(diff[k]))
+            f.write('\n')
+            k = k + 1
+
     if dbg == 'true':
         plt.figure(3)
         plt.plot(xlist, diff, 'o')
@@ -800,7 +809,7 @@ if __name__ == '__main__':
                 pcal_reading(ifile, ntone, itype, dbg, acc_period)
 
             print '\nNow tell me what you want to do:'
-            print 'press 1 if uou want to plot signal and see the time delay;'
+            print 'press 1 if you want to plot signal and see the time delay;'
             print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response;'
             print 'press 3 if you want to see the difference between time delays in 2 different files.'
             print 'press 4 if you want to leave.'
@@ -837,7 +846,7 @@ if __name__ == '__main__':
         elif os.path.isdir(ifile):
             print 'Hello. Welcome to PCal.'
             print 'Press 1 if you want to calculate time delays and see differences between them.'
-            print 'Press 2 if you wanr to leave.'
+            print 'Press 2 if you want to leave.'
             mode = raw_input()
 
             if mode == '1':
