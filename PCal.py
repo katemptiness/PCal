@@ -772,15 +772,6 @@ def pcal_diff(a, b):
     
     print '\nThe slope of trend line is', "%.3f" % (m)
 
-    if write == 'true':
-        name = ifile[0:18] + 'diffs.txt'
-        f = open(name, 'w')
-        k = 0
-        while k < len(diff):
-            f.write(str(diff[k]))
-            f.write('\n')
-            k = k + 1
-
     if dbg == 'true':
         plt.figure(3)
         plt.plot(xlist, diff, 'o')
