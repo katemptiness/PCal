@@ -23,10 +23,14 @@ def main():
 	elif opt in ('-f', '--files'):
 	    files = arg
 	elif opt in ('-e', '--exception'):
-	    exception = int(arg) * 2
-	    if exception <= 0:
-	        print 'Error. You should enter the value which is more than 0!'
-	        sys.exit()
+	    try:
+		exception = int(arg) * 2
+		if exception <= 0:
+		    print 'Error. You should enter the value which is more than 0!'
+		    sys.exit()
+	    except:
+		print 'Error. You should enter one integer value!'
+		sys.exit()
 
 
 def usage():
