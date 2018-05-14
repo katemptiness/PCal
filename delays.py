@@ -24,6 +24,9 @@ def main():
 	    files = arg
 	elif opt in ('-e', '--exception'):
 	    exception = int(arg) * 2
+	    if exception <= 0:
+	        print 'Error. You should enter the value which is more than 0!'
+	        sys.exit()
 
 
 def usage():
@@ -92,11 +95,11 @@ def reading(files):
 		m, c = linalg.lstsq(A, li, rcond = -1)[0]
 		trend = m * xlist + c
 	    
-	    h = 0
-	    while h < lenn:
-		ms.append(m)
-		cs.append(c)
-		h = h + 1
+	    	h = 0
+	    	while h < lenn:
+		    ms.append(m)
+		    cs.append(c)
+		    h = h + 1
 
 	    if i != exception:
 		plt.plot(xlist, li, 'o')
