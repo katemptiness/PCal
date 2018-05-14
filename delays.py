@@ -70,10 +70,10 @@ def reading(files):
 	    j = j + 1
 	
 	x2 = x1 + lenn
-	
+
 	if k > 0:
 	
-	    xlist = np.linspace(x1, (x2 - 1), lenn)
+	    xlist = np.linspace((x1 * 0.5), ((x2 - 1) * 0.5), lenn)
 	
 	    A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
 	    m, c = linalg.lstsq(A, li, rcond = -1)[0]
@@ -81,7 +81,7 @@ def reading(files):
 	    
 	    h = 0
 	    while h < lenn:
-		ms.append(m)
+	    	ms.append(m)
 		cs.append(c)
 		h = h + 1
 	
@@ -89,6 +89,11 @@ def reading(files):
 	    plt.plot(xlist, trend)
 	
 	    x1 = x2 + space
+
+	    h = 0
+	    while h < space:
+	    	ms.append(0)
+	    	h = h + 1
 	
 	k = k + 1
 	i = i + 2
@@ -105,7 +110,7 @@ def reading(files):
     print 'The slope is', m
     
     plt.grid()
-    plt.xlabel('accumulation periods')
+    plt.xlabel('time, s')
     plt.ylabel('difference between time delays, ps')
     plt.gcf().canvas.set_window_title('Difference between time delays')
     plt.show()
