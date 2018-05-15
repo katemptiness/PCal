@@ -539,9 +539,9 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         while j < acc_periods:
             re = (trends[i])[1] - (trends[i])[0]
             re_trends.append((trends[i])[j] - j * re)
-            re_table.append(unwraping(table[i])[j] - j * re)
+            re_table.append(unwraping(unwraping(table[i]))[j] - j * re)
             j = j + 1
-        std.append(np.std(unwraping(re_table)))
+        std.append(np.std(unwraping(unwraping(re_table))))
         new_table.append(re_table)
         re_table = []
         i = i + 1

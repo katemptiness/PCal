@@ -35,7 +35,7 @@ def main():
 
 def usage():
 	print 'Use -f for path to your files. For example: ./delays.py -f ~/files'
-	print 'You can also use -e for exclude value. For example: ./delays.py -f ~/files -e 14'
+	print 'You can also use -e to exclude the value. For example: ./delays.py -f ~/files -e 14'
 
 
 def reading(files):
