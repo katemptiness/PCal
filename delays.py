@@ -2,141 +2,126 @@
 
 import numpy as np, numpy.linalg as linalg
 import matplotlib.pyplot as plt
-import getopt, sys
 import os
+import getopt, sys
 
 def main():
-    global files, exception
+	global files, exception
 
-    exception = -1
+	exception = -1
 
-    try:
-	opts, args = getopt.getopt(sys.argv[1:], 'hf:e:', ['files=', 'exception='])
-    except getopt.GetoptError:
-	print 'Something is wrong...\n'
-	usage()
-	sys.exit(2)
-    for opt, arg in opts:
-	if opt in ('-h', '--help'):
-	    usage()
-	    sys.exit()
-	elif opt in ('-f', '--files'):
-	    files = arg
-	elif opt in ('-e', '--exception'):
-	    try:
-		exception = int(arg) * 2
-		if exception <= 0:
-		    print 'Error. You should enter the value which is more than 0!'
-		    sys.exit()
-	    except:
-		print 'Error. You should enter one integer value!'
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], 'hf:e:', ['files=', 'exception='])
+	except getopt.GetoptError:
+		print 'Looks like something is wrong...'
+		usage()
 		sys.exit()
+	for opt, arg in opts:
+		if opt in ('-h', '--help'):
+			usage()
+			sys.exit()
+		elif opt in ('-f', '--files'):
+			files = arg
+		elif opt in ('-e', '--exception'):
+			try:
+				exception = int(arg)
+				if exception <= 0:
+					print 'Error: -e parameter should be more than 1.'
+					sys.exit()
+			except:
+				print 'Error: -e parameter should be one integer value.'
+				sys.exit()
 
 
 def usage():
-    print 'Use -f for path to your files.'
-    print 'You can also use -e for number of pair of files you want to exclude from sample.'
-    print
-    print 'For example: ./delays.py -f ~/files -e 12'
-    print 'or just : ./delays.py -f ~/files'
+	print 'Use -f for path to your files. For example: ./delays.py -f ~/files'
+	print 'You can also use -e for exclude value. For example: ./delays.py -f ~/files -e 14'
 
 
 def reading(files):
-    all_files = os.listdir(files)
-    all_files = sorted(all_files)
-    
-    len_files = len(all_files)
-    
-    k = 0
-    while k < len_files:
-	all_files[k] = files + all_files[k]
-	k = k + 1
-    
-    li = []
-    sp = []
-    x1 = 0
-    ms = []
-    cs = []
-    
-    i = 0
-    k = 0
-    while i < len_files:
-	start = ((all_files[i]).find('PCAL_') + 5) + 6
-	stop = start + 6
+	all_files = sorted(os.listdir(files))
 
-	len1 = sum(1 for line in open(all_files[i]))
-	len2 = sum(1 for line in open(all_files[i + 1]))
-	lenn = min(len1, len2)
+	spaces = []
+	i = 0
+	while i < (len(all_files) - 2):
+		spaces.append(int((all_files[i + 2])[11 : 17]) - int((all_files[i])[11 : 17]))
+		i = i + 2
 
-	sp.append(float((all_files[i])[start : stop]))
-	    
-	if k > 0:
-	    space = (sp[k] - sp[k - 1]) * 2
+	lens = []
+	j = 0
+	while j < len(all_files):
+		lens.append(min(sum(1 for line in open(files + all_files[j])), sum(1 for line in open(files + all_files[j + 1]))))
+		j = j + 2
 
-	if i != exception:
-	    ifile1 = open(all_files[i])
-	    ifile2 = open(all_files[i + 1])
-	
-	    li = []
-	    j = 0
-	    while j < lenn:
-		ch1 = float(ifile1.readline())
-		ch2 = float(ifile2.readline())
-		ch = abs(ch1 - ch2) * 1e6
+	delay_difs = []
+	k = 0
+	i = 0
+	while k < (len(all_files) - 1):
+		file1 = open(files + all_files[k])
+		file2 = open(files + all_files[k + 1])
+		j = 0
+		while j < lens[i]:
+			delay_difs.append(abs(float(file1.readline()) - float(file2.readline())) * 1e6)
+			j = j + 1
+		i = i + 1
+		k = k + 2
 
-		li.append(ch)
-
-		j = j + 1
-	
-	x2 = x1 + lenn
-
-	if k > 0:
-	
-	    xlist = np.linspace((x1 * 0.5), ((x2 - 1) * 0.5), lenn)
-	
-	    if i != exception:
+	x1 = 1
+	y1 = 0
+	ms = []
+	cs = []
+	i = 0
+	while i < len(lens):
+		x2 = x1 + lens[i]
+		y2 = y1 + lens[i]
+		xlist = np.linspace((x1 / 2), (x2 / 2), (x2 - x1))
+		ylist = delay_difs[y1 : y2]
 		A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
-		m, c = linalg.lstsq(A, li, rcond = -1)[0]
-		trend = m * xlist + c
-	    
-	    	h = 0
-	    	while h < lenn:
-		    ms.append(m)
-		    cs.append(c)
-		    h = h + 1
+		m, c = linalg.lstsq(A, ylist, rcond = -1)[0]
+		if i != exception:
+			k = 0
+			while k < len(delay_difs[y1 : y2]):
+				ms.append(m)
+				cs.append(c)
+				k = k + 1
+			trend = m * xlist + c
+			plt.plot(xlist, ylist, 'o')
+			plt.plot(xlist, trend)
+		else:
+			k = 0
+			while k < len(delay_difs[y1 : y2]):
+				ms.append(0)
+				k = k + 1
+		try:
+			x1 = x1 + spaces[i] * 2
+		except:
+			x1 = x1
+		y1 = y2
+		i = i + 1
 
-	    if i != exception:
-		plt.plot(xlist, li, 'o')
-		plt.plot(xlist, trend)
-	
-	    x1 = x2 + space
+	j = 0
+	while j < len(spaces):
+		i = 0
+		while i < spaces[j]:
+			ms.append(0)
+			i = i + 1
+		j = j + 1
 
-	    h = 0
-	    while h < space:
-		ms.append(0)
-		h = h + 1
+	m = np.mean(ms)
+	c = np.mean(cs)
+	super_xlist = np.linspace(0, xlist[-1], 100)
+	super_trend = m * super_xlist + c
+	plt.plot(super_xlist, super_trend)
 
-	k = k + 1
-	i = i + 2
-    
-    c = np.mean(cs)
-    m = np.mean(ms)
+	print 'The slope is', m
 
-    xlist = np.linspace(0, xlist[-1], 10)
-
-    trend = m * xlist + c
-
-    plt.plot(xlist, trend)
-
-    print 'The slope is', m
-    
-    plt.grid()
-    plt.xlabel('time, s')
-    plt.ylabel('difference between time delays, ps')
-    plt.gcf().canvas.set_window_title('Difference between time delays')
-    plt.show()
+	plt.grid()
+	plt.xlabel('time, s')
+	plt.ylabel('differences between time delays, ps')
+	plt.gcf().canvas.set_window_title('Difference between time delays')
+	plt.show()
 
 
 if __name__ == '__main__':
-    main()
-    reading(files)
+	main()
+	reading(files)
