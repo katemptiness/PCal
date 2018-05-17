@@ -26,7 +26,7 @@ def main():
 			try:
 				exception = int(arg)
 				if exception <= 0:
-					print 'Error: -e parameter should be more than 1.'
+					print 'Error: -e parameter should be more than 0.'
 					sys.exit()
 			except:
 				print 'Error: -e parameter should be one integer value.'

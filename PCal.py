@@ -197,12 +197,7 @@ def unwraping2(lista):
 def SetIndex0(i, N, iPow):
     i0 = i
     
-    bb = []
-    
-    kk = 0
-    while kk < 32:
-        bb.append('')
-        kk = kk + 1
+    bb = (np.empty((32, 0))).tolist()
     
     j = 0
     while j < iPow:
@@ -211,12 +206,12 @@ def SetIndex0(i, N, iPow):
 
     j = N
     k = iPow
-    l = 0
-    m = 0
+    l = m = 0
 
     while i >= 1:
-        bb[k] = i >= j
-        if bb[k]:
+        if i >= j:
+            bb[k] = True
+        if bb[k] == True:
             i = i - j
             l = l + m
         j = j / 2
@@ -238,39 +233,19 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
         iPow = iPow + 1
         i = i * 2
     
-    if i > N:
-        return
+    acos = (np.empty((iPow, 0))).tolist()
+    asin = (np.empty((iPow, 0))).tolist()
+
+    Re = (np.empty((2 * N, 0))).tolist()
+    Im = (np.empty((2 * N, 0))).tolist()
     
-    acos = []
-    asin = []
-    
-    kk = 0
-    while kk < iPow:
-        acos.append('')
-        asin.append('')
-        kk = kk + 1
-    
-    Re = []
-    Im = []
-    
-    kk = 0
-    while kk < 2 * N:
-        Re.append('')
-        Im.append('')
-        kk = kk + 1
-    
-    I = []
-    
-    kk = 0
-    while kk < N:
-        I.append('')
-        kk = kk + 1
+    I = (np.empty((N, 0))).tolist()
     
     j = 0
     while j < N:
         I[j] = SetIndex0(j, N, iPow)
         j = j + 1
-        
+    
     a = np.pi * Tau
         
     if bInv == 0:
@@ -282,14 +257,14 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
         asin[i] = np.sin(a)
         a = a / 2
         i = i + 1
-        
+    
     j = 0
     while j < N:
         j1 = I[j]
         Re[j1] = Re0[j]
         Im[j1] = Im0[j]
         j = j + 1
-        
+    
     k = 2
         
     l = 0
@@ -302,7 +277,7 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
             j = j + k
         k = k * 2
         l = l + 1
-        
+    
     Re1 = Re[0] / N
     Im1 = Im[0] / N
         
@@ -658,9 +633,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
                 i = i - 1
 
         m = np.mean(noise)
-
         snr = ((ampl - m) / np.std(np.asarray(noise) - m))
-
         sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
 
         j0 = number
@@ -692,14 +665,14 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
                 tau = tau + delta_tau
             
             cj = abs(np.asarray(cj))
-
+            
             number = max(izip(cj, count()))[1]
             tau = tau_list[number]
             tau_min = tau - delta_tau * 2
             tau_max = tau + delta_tau * 2
                 
-            if delta_tau == 1e-3:
-                delta_tau = delta_tau / 20
+            if delta_tau == 1e-4:
+                delta_tau = delta_tau / 2
             else:
                 delta_tau = delta_tau / 10
 
