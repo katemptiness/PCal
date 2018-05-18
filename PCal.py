@@ -50,37 +50,19 @@ def main():
             usage()
             sys.exit()
         elif opt in ('-f', '--ifile'):
-            if arg[0] == ' ':
-                ifile = arg[1:]
-            else:
-                ifile = arg
-                if os.path.isfile(ifile):
-                    ntone = '1 : ' + str(file_read(ifile))
+            ifile = arg
+            if os.path.isfile(ifile):
+                ntone = '1 : ' + str(file_read(ifile))
         elif opt in ('-n', '--ntone'):
-            if arg[0] == ' ':
-                ntone = arg[1:]
-            else:
-                ntone = arg
+            ntone = arg
         elif opt in ('-t', '--itype'):
-            if arg[0] == ' ':
-                itype = arg[1:]
-            else:
-                itype = arg
+            itype = arg
         elif opt in ('-d', '--dbg'):
-            if arg[0] == ' ':
-                dbg = arg[1:]
-            else:
-                dbg = arg
+            dbg = arg
         elif opt in ('-w', '--write'):
-            if arg[0] == ' ':
-                write = arg[1:]
-            else:
-                write = arg
+            write = arg
         elif opt in ('-a', '--acc_period'):
-            if arg[0] == ' ':
-                acc_period = int(arg[1:])
-            else:
-                acc_period = int(arg)
+            acc_period = int(arg)
             if acc_period == 1:
                 print 'Sorry, -a parameter should be more than 1.'
                 sys.exit()
@@ -482,7 +464,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
     if dbg == 'true':
         f, axar = plt.subplots(4)
 
-    time = np.linspace(0, accumulation_period * acc_periods, acc_periods)
+    time = np.linspace(0, (accumulation_period * acc_periods - accumulation_period), acc_periods)
     trends = []
     i = 0
     while i < counter:
@@ -525,7 +507,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         plt.figure(1)
         axar[0].grid()
         axar[0].set_xlabel('time, s')
-        axar[0].set_ylabel(itype)
+        axar[0].set_ylabel('phase, grad')
 
         j = 0
         while j < counter:
@@ -539,7 +521,7 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         plt.figure(1)
         axar[1].grid()
         axar[1].set_xlabel('tone numbers')
-        axar[1].set_ylabel('tilt angle')
+        axar[1].set_ylabel('tilt angle, grad')
 
         j = 0
         while j < counter:
@@ -550,10 +532,10 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
         plt.figure(1)
         axar[2].grid()
         axar[2].set_xlabel('tone numbers')
-        axar[2].set_ylabel('standard deviation')
+        axar[2].set_ylabel('standard deviation, grad')
         
         axar[3].hist(std, bins = counter)
-        axar[3].set_xlabel('standard deviation')
+        axar[3].set_xlabel('standard deviation, grad')
         axar[3].set_ylabel('tones')
 
         plt.gcf().canvas.set_window_title('Phase of time graph, tilt angle & STD')
@@ -614,7 +596,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
             axar[0].plot(time, ph1)
             plt.pause(0.001)
             axar[0].set_xlabel('time, us')
-            axar[0].set_ylabel('amplitude')
+            axar[0].set_ylabel('amplitude, V')
                 
         number = max(izip(ph1, count()))[1]
 
@@ -738,6 +720,7 @@ def pcal_diff(a, b):
     diff = abs(np.asarray(a) - np.asarray(b)) * 1e6
 
     xlist = np.linspace(1, len(a), len(a))
+    xlist = np.linspace(0, (len(a) / 2 - 0.5), len(a))
 
     A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
     m, c = linalg.lstsq(A, diff, rcond = -1)[0]
@@ -750,7 +733,7 @@ def pcal_diff(a, b):
         plt.plot(xlist, diff, 'o')
         plt.plot(xlist, trend)
         plt.grid()
-        plt.xlabel('accumulation periods')
+        plt.xlabel('time, s')
         plt.ylabel('difference between time delays, ps')
         plt.gcf().canvas.set_window_title('Difference between time delays')
         plt.show()
