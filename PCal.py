@@ -331,7 +331,8 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
         i = 0
         while i < counter:
             if itype == 'phase':
-                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]),float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))) * (180 / np.pi))
+                table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))))
+                (table[i])[j] = (table[i])[j] * (180 / np.pi)
             elif itype == 'amplitude':
                 table[i].append(math.hypot(float(smh[(len(smh) - 1) - 1 - int(ntones[i] * 4)]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4])) * 1000)
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
