@@ -559,25 +559,48 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
 
     good_ntones = np.asarray(good_ntones)
 
-    i = 0
-    while i < len(good_ntones):
-        li.append(np.mean(good_table[i]))
-        i = i + 1
+    #i = 0
+    #while i < len(good_ntones):
+        #li.append(np.mean(good_table[i]))
+        #i = i + 1
         
-    plt.figure(2)
-    plt.plot(good_ntones, unwraping2(li))
-    plt.plot(good_ntones, unwraping2(li), 'o')
+    #plt.figure(2)
+    #plt.plot(good_ntones, unwraping2(li))
+    #plt.plot(good_ntones, unwraping2(li), 'o')
     
-    if dbg == 'true':
-        plt.figure(2)
-        plt.grid()
-        plt.xlabel('frequency')
-        plt.ylabel(itype)
-        plt.gcf().canvas.set_window_title('Phase-frequency responce')
-        plt.show()
+    #if dbg == 'true':
+        #plt.figure(2)
+        #plt.grid()
+        #plt.xlabel('frequency')
+        #plt.ylabel(itype)
+        #plt.gcf().canvas.set_window_title('Phase-frequency responce')
+        #plt.show()
+
+    new_ph = []
+
+    j = 0
+    while j < acc_periods:
+        i = 0
+        k = 0
+        while i < counter:
+            try:
+                if i == good_ntones[k]:
+                    new_ph.append((ph[(j * counter) : ((j + 1) * counter)])[i])
+                    k = k + 1
+                else:
+                    new_ph.append(0)
+            except:
+                new_ph.append(0)
+            i = i + 1
+        j = j + 1
+
+    return new_ph
 
 
 def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
+    new_ph = pcal_phaseresponse(ifile, ntones, itype, 'false')
+    ph = new_ph
+
     li = []
     
     if dbg == 'true':
@@ -601,23 +624,23 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write):
                 
         number = max(izip(ph1, count()))[1]
 
-        ampl = ph1[number]
+        #ampl = ph1[number]
             
-        noise = []
-        if number >= 250:
-            i = 0
-            while i < (number - 100):
-                noise.append(ph1[i])
-                i = i + 1
-        elif number < 250:
-            i = (file_read(ifile) - 1)
-            while i > (number + 100):
-                noise.append(ph1[i])
-                i = i - 1
+        #noise = []
+        #if number >= 250:
+            #i = 0
+            #while i < (number - 100):
+                #noise.append(ph1[i])
+                #i = i + 1
+        #elif number < 250:
+            #i = (file_read(ifile) - 1)
+            #while i > (number + 100):
+                #noise.append(ph1[i])
+                #i = i - 1
 
-        m = np.mean(noise)
-        snr = ((ampl - m) / np.std(np.asarray(noise) - m))
-        sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
+        #m = np.mean(noise)
+        #snr = ((ampl - m) / np.std(np.asarray(noise) - m))
+        #sigma = (np.sqrt(12) / (2 * np.pi * file_read(ifile) * 1e6 * snr))
 
         j0 = number
 
