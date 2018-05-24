@@ -21,8 +21,6 @@ def main():
 		if opt in ('-h', '--help'):
 			usage()
 			sys.exit()
-		elif opt in ('-f', '--files'):
-			files = arg
 		elif opt in ('-e', '--exception'):
 			try:
 				exception = int(arg)
@@ -32,6 +30,7 @@ def main():
 			except:
 				print 'Error: -e parameter should be one integer value.'
 				sys.exit()
+		elif opt in ('-f', '--files'): files = arg
 
 
 def usage():
@@ -60,10 +59,7 @@ def reading(files):
 	while k < (len(all_files) - 1):
 		file1 = open(files + all_files[k])
 		file2 = open(files + all_files[k + 1])
-		j = 0
-		while j < lens[i]:
-			delay_difs.append(abs(float(file1.readline()) - float(file2.readline())) * 1e6)
-			j = j + 1
+		for j in range(lens[i]): delay_difs.append(abs(float(file1.readline()) - float(file2.readline())) * 1e6)
 		i = i + 1
 		k = k + 2
 
@@ -71,8 +67,7 @@ def reading(files):
 	y1 = 0
 	ms = []
 	cs = []
-	i = 0
-	while i < len(lens):
+	for i in range(len(lens)):
 		x2 = x1 + lens[i]
 		y2 = y1 + lens[i]
 		xlist = np.linspace((x1 / 2), (x2 / 2), (x2 - x1))
@@ -80,33 +75,22 @@ def reading(files):
 		A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
 		m, c = linalg.lstsq(A, ylist, rcond = -1)[0]
 		if i != exception:
-			k = 0
-			while k < len(delay_difs[y1 : y2]):
+			for k in range(len(delay_difs[y1 : y2])):
 				ms.append(m)
 				cs.append(c)
-				k = k + 1
 			trend = m * xlist + c
 			plt.plot(xlist, ylist, 'o')
 			plt.plot(xlist, trend)
 		else:
-			k = 0
-			while k < len(delay_difs[y1 : y2]):
-				ms.append(0)
-				k = k + 1
+			for k in range(len(delay_difs[y1 : y2])): ms.append(0)
 		try:
 			x1 = x1 + spaces[i] * 2
 		except:
-			x1 = x1
+			pass
 		y1 = y2
-		i = i + 1
 
-	j = 0
-	while j < len(spaces):
-		i = 0
-		while i < spaces[j]:
-			ms.append(0)
-			i = i + 1
-		j = j + 1
+	for j in range(len(spaces)):
+		for i in range(spaces[j]): ms.append(0)
 
 	m = np.mean(ms)
 	c = np.mean(cs)
