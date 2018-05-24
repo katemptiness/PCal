@@ -7,14 +7,6 @@ import getopt, sys
 import matplotlib.pyplot as plt
 import os
 from itertools import count, izip
-import struct
-
-def file_read(ifile):
-    ifile = open(ifile)
-    for i in range(5): ifile.readline()
-    counter = int((str(ifile.readline()).split())[5])
-    return counter
-    
 
 def main():
     global itype, dbg, ntone, ifile, acc_period, write, mode_filtration
@@ -68,6 +60,41 @@ def usage():
     print '-n, -a, -t, -d, -w & -m parameters are "1 : last", "all", "phase", "false", "false" & "false" as default, so you can only use -f.'
     print
     print 'Warning: -a parameter (accumulation periods) should be more than 1!'
+
+
+def file_read(ifile):
+    ifile = open(ifile)
+    for i in range(5): ifile.readline()
+    counter = int((str(ifile.readline()).split())[5])
+    return counter
+
+
+def ntone_form(ntone):
+    ntones = (str(ntone).replace(',', '')).split()
+    
+    tones = []
+    
+    i = ntones.count(':')
+    while i > 0:
+        g = ntones.index(':')
+        tones.append(ntones[g - 1])
+        tones.append(ntones[g + 1])
+        del ntones[g], ntones[g], ntones[g - 1]
+        i = i - 1
+    
+    for i in range(len(ntones)): ntones[i] = int(ntones[i])
+    
+    tones_1 = []
+    
+    for i in range(len(tones) / 2):
+        g = np.linspace(int(tones[0 + 2 * i]), int(tones[1 + 2 * i]), (int(tones[1 + 2 * i]) - int(tones[0 + 2 * i]) + 1))
+        for j in range(len(g)): tones_1.append(int(g[j]))
+
+    ntones = np.append(np.asarray(ntones), tones_1)
+    ntones.sort()
+    ntones = ntones - 1
+    
+    return ntones
 
 
 def unwraping(lista):
@@ -184,7 +211,7 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
     return Im1, Re1
     
     
-def pcal_read(ifile, ntone, itype, dbg, acc_period):
+def pcal_read(ifile, ntone, itype, acc_period):
     global table, counter, ph, acc_periods, ntones, accumulation_period
     
     ifile = open(ifile)
@@ -199,40 +226,10 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
 
     accumulation_period = 0.5
     
-    ntones = (str(ntone).replace(',', '')).split()
-    
-    tones = []
-    
-    i = ntones.count(':')
-    while i > 0:
-        g = ntones.index(':')
-        tones.append(ntones[g - 1])
-        tones.append(ntones[g + 1])
-        del ntones[g], ntones[g], ntones[g - 1]
-        i = i - 1
-    
-    li = []
-    i = 0
-    while i < len(ntones):
-        li.append(int(ntones[i]))
-        i = i + 1
-    ntones = li
-    
-    tones_1 = []
-    i = 0
-    
-    for i in range(len(tones) / 2):
-        g = np.linspace(int(tones[0 + 2 * i]), int(tones[1 + 2 * i]), (int(tones[1 + 2 * i]) - int(tones[0 + 2 * i]) + 1))
-        for j in range(len(g)): tones_1.append(int(g[j]))
-
-    ntones = np.append(np.asarray(ntones), tones_1)
-    ntones.sort()
-    ntones = ntones - 1
-
+    ntones = ntone_form(ntone)
     counter = len(ntones)
 
     table = (np.empty((counter, 0))).tolist()
-
     ph = []
     
     for j in range(acc_periods):
@@ -500,15 +497,17 @@ if __name__ == '__main__':
     if os.path.exists(ifile):
 
         if os.path.isfile(ifile):
+            print 'Hello. Welcome to PCal. Please wait until your file will be ready...'
 
-            print 'Hello. Welcome to PCal. Now tell me what you want to do:'
+            pcal_read(ifile, ntone, itype, acc_period)
+            
+            print '\nNow tell me what you want to do:'
             print 'press 1 if you want to plot signal and see the time delay;'
             print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response;'
             print 'press 3 if you want to see the difference between time delays in 2 different files.'
             print 'press 4 if you want to leave.'
     
             what = raw_input()
-            pcal_read(ifile, ntone, itype, dbg, acc_period)
             if what == '2':
                 pcal_phaseresponse(ifile, ntones, itype, dbg, mode_filtration)
             elif what == '1':
@@ -522,7 +521,7 @@ if __name__ == '__main__':
                 new_ifile = raw_input()
         
                 where_to_go = open(ifile)
-                pcal_read(new_ifile, ntone, itype, dbg, acc_period)
+                pcal_read(new_ifile, ntone, itype, acc_period)
         
                 b = pcal_delay(new_ifile, ntones, itype, dbg, qwerty, write, mode_filtration)
 
@@ -560,10 +559,10 @@ if __name__ == '__main__':
                 try:
                     i = 0
                     while i < (len(files) - 1):
-                        pcal_read(files[i], ntone, itype, dbg, acc_period, 2)
+                        pcal_read(files[i], ntone, itype, acc_period)
                         a = pcal_delay(files[i], ntones, itype, dbg, qwerty, write, mode_filtration)
 
-                        pcal_read(files[i + 1], ntone, itype, dbg, acc_period, 2)
+                        pcal_read(files[i + 1], ntone, itype, acc_period)
                         b = pcal_delay(files[i + 1], ntones, itype, dbg, qwerty, write, mode_filtration)
 
                         if (files[i])[0 : 17] == (files[i + 1])[0 : 17]:
@@ -576,11 +575,11 @@ if __name__ == '__main__':
             
                     i = 0
                     while i < (len(files) - 1):
-                        pcal_read(files[i], ntone, itype, dbg, acc_period, 2)
+                        pcal_read(files[i], ntone, itype, acc_period)
                         poiuy = '2'
                         a = pcal_delay(files[i], ntones, itype, dbg, qwerty, write, mode_filtration)
 
-                        pcal_read(files[i + 1], ntone, itype, dbg, acc_period, 2)
+                        pcal_read(files[i + 1], ntone, itype, acc_period)
                         poiuy = '3'
                         b = pcal_delay(files[i + 1], ntones, itype, dbg, qwerty, write, mode_filtration)
 
