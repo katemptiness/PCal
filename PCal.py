@@ -543,8 +543,8 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
 
         plt.show(block = False)
 
-    li = []
-    
+    #li = []
+
     std_threshold = 4 * min(std)
 
     good_table = []
@@ -568,13 +568,13 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg):
     #plt.plot(good_ntones, unwraping2(li))
     #plt.plot(good_ntones, unwraping2(li), 'o')
     
-    #if dbg == 'true':
+    if dbg == 'true':
         #plt.figure(2)
         #plt.grid()
         #plt.xlabel('frequency')
         #plt.ylabel(itype)
         #plt.gcf().canvas.set_window_title('Phase-frequency responce')
-        #plt.show()
+        plt.show()
 
     new_ph = []
 
