@@ -43,8 +43,6 @@ def main():
 
     
 def usage():
-    print 'Hello, this is the USAGE function.'
-    print
     print 'You can use this forms to work:'
     print '-f is for path to the file or directory;'
     print '-n is for tone numbers;'
@@ -163,8 +161,7 @@ def SetIndex0(i, N, iPow):
 
 
 def Fraq_FFT(N, Re0, Im0, Tau, bInv):
-    Re1 = Im1 = 0
-    iPow = 0
+    Re1 = Im1 = iPow = 0
     
     i = 1
     while i < N:
@@ -173,10 +170,8 @@ def Fraq_FFT(N, Re0, Im0, Tau, bInv):
     
     acos = (np.empty((iPow, 0))).tolist()
     asin = (np.empty((iPow, 0))).tolist()
-
     Re = (np.empty((2 * N, 0))).tolist()
     Im = (np.empty((2 * N, 0))).tolist()
-    
     I = (np.empty((N, 0))).tolist()
     
     for j in range(N): I[j] = SetIndex0(j, N, iPow)
@@ -373,24 +368,23 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write, mode_filtration):
                 
         number = max(izip(ph1, count()))[1]
         j0 = number
+        
+        res = (np.asarray(ph).real)[(j * counter) : (j * counter + counter)]
+        ims = (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)]
 
         if j == 0:
             j1 = ("%.7f" % (((j0 * 1e-6) / 512) * 1e6))
             print '\nThe time delay is about', j1, 'microseconds \n'
             print 'Starting the calculation...'
-            
+        
         tau_min = j0 - 1
         tau_max = j0 + 1
-            
         delta_tau = 0.1
         while delta_tau >= 5e-5:
             tau = tau_min
             
             tau_list = []
             cj = []
-
-            res = (np.asarray(ph).real)[(j * counter) : (j * counter + counter)]
-            ims = (np.asarray(ph).imag)[(j * counter) : (j * counter + counter)]
                 
             while tau <= tau_max:
                 im, re = Fraq_FFT(file_read(ifile), res, ims, tau, 1)
