@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import numpy as np, numpy.fft as fft, numpy.linalg as linalg
 import cmath, math
@@ -250,8 +251,6 @@ def pcal_read(ifile, ntone, itype, dbg, acc_period):
 def pcal_phaseresponse(ifile, ntones, itype, dbg, mode_filtration):
     global trends, std, new_table, table
 
-    if dbg == 'true': f, axar = plt.subplots(4)
-
     time = np.linspace(0, (accumulation_period * acc_periods - accumulation_period), acc_periods)
     trends = []
 
@@ -262,8 +261,10 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg, mode_filtration):
         trends.append(trend)
                 
         if dbg == 'true':
-            axar[0].plot(time, unwraping(unwraping(table[i - 1])), 'o')
-            axar[0].plot(time, trend)
+            plt.figure(1)
+            plt.gcf().canvas.set_window_title(u'Фаза от времени')
+            plt.plot(time, unwraping(unwraping(table[i - 1])), 'o')
+            plt.plot(time, trend)
 
     AC = len(time)
     
@@ -285,32 +286,35 @@ def pcal_phaseresponse(ifile, ntones, itype, dbg, mode_filtration):
         re_table = []
 
     if dbg == 'true':
-        axar[0].grid()
-        axar[0].set_xlabel('time, s')
-        axar[0].set_ylabel('phase, grad')
+        plt.grid()
+        plt.xlabel(u'время, с')
+        plt.ylabel(u'фаза, градусы')
+        plt.show(block = False)
 
         for j in range(counter):
             BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
             AB = np.sqrt(BC * BC + AC * AC)
             alpha = np.arcsin(BC / AB) * (180 / np.pi)
-            axar[1].plot((int(ntones[j]) + 1), alpha, 'o')
+            plt.figure(2)
+            plt.gcf().canvas.set_window_title(u'Угол наклона от номера тона')
+            plt.plot((int(ntones[j]) + 1), alpha, 'o')
 
-        axar[1].grid()
-        axar[1].set_xlabel('tone numbers')
-        axar[1].set_ylabel('tilt angle, grad')
-
-        for j in range(counter): axar[2].plot((ntones[j] + 1), std[j], 'o')
+        plt.grid()
+        plt.xlabel(u'номера тонов, ед.')
+        plt.ylabel(u'угол наклона, градусы')
+        plt.show(block = False)
         
-        axar[2].grid()
-        axar[2].set_xlabel('tone numbers')
-        axar[2].set_ylabel('standard deviation, grad')
+        f, axar = plt.subplots(2)
+        plt.gcf().canvas.set_window_title(u'СКО')
         
-        axar[3].hist(std, bins = counter)
-        axar[3].set_xlabel('standard deviation, grad')
-        axar[3].set_ylabel('tones')
-
-        plt.gcf().canvas.set_window_title('Phase of time graph, tilt angle & STD')
-
+        for j in range(counter): axar[0].plot((ntones[j] + 1), std[j], 'o')
+        
+        axar[0].grid()
+        axar[0].set_xlabel(u'номера тонов, ед.')
+        axar[0].set_ylabel(u'СКО, градусы')
+        axar[1].hist(std, bins = counter)
+        axar[1].set_xlabel(u'СКО, градусы')
+        axar[1].set_ylabel(u'число тонов, ед.')
         plt.show()
 
     if mode_filtration == 'true':
@@ -367,8 +371,8 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write, mode_filtration):
         if dbg == 'true':
             axar[0].plot(time, ph1)
             plt.pause(0.001)
-            axar[0].set_xlabel('time, us')
-            axar[0].set_ylabel('amplitude, V')
+            axar[0].set_xlabel(u'время, мкс')
+            axar[0].set_ylabel(u'напряжение, мВ')
                 
         number = max(izip(ph1, count()))[1]
         j0 = number
@@ -428,8 +432,8 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write, mode_filtration):
             
             axar[1].plot(xlist, np.asarray(li) * 1e6, 'o')
             axar[1].grid()
-            axar[1].set_xlabel('time, s')
-            axar[1].set_ylabel('time delay, ps')
+            axar[1].set_xlabel(u'время, с')
+            axar[1].set_ylabel(u'задержка, пс')
             plt.gcf().canvas.set_window_title(ifile)
             plt.draw()
         
@@ -483,8 +487,8 @@ def pcal_diff(a, b):
         plt.plot(xlist, diff, 'o')
         plt.plot(xlist, trend)
         plt.grid()
-        plt.xlabel('time, s')
-        plt.ylabel('difference between time delays, ps')
+        plt.xlabel(u'время, с')
+        plt.ylabel(u'разностная задержка, пс')
         plt.gcf().canvas.set_window_title('Difference between time delays')
         plt.show()
 
