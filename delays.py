@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import numpy as np, numpy.linalg as linalg
 import matplotlib.pyplot as plt
@@ -116,8 +117,8 @@ def reading(files):
 	print 'The slope is', m
 
 	plt.grid()
-	plt.xlabel('time, s')
-	plt.ylabel('differences between time delays, ps')
+	plt.xlabel(u'время, с')
+	plt.ylabel(u'разностная задержка, пс')
 	plt.gcf().canvas.set_window_title('Difference between time delays')
 	plt.show()
 
