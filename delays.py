@@ -119,7 +119,7 @@ def reading(files):
 	plt.grid()
 	plt.xlabel(u'время, с')
 	plt.ylabel(u'разностная задержка, пс')
-	plt.gcf().canvas.set_window_title('Difference between time delays')
+	plt.gcf().canvas.set_window_title(u'Разностная задержка')
 	plt.show()
 
 
