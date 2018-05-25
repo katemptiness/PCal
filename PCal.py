@@ -234,7 +234,7 @@ def pcal_read(ifile, ntone, acc_period):
     ifile.close()
     
 
-def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration):
+def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration, write):
     global trends, std, new_table, table
 
     time = np.linspace(0, (accumulation_period * acc_periods - accumulation_period), acc_periods)
@@ -307,6 +307,13 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration):
         axar[1].set_ylabel(u'число тонов, ед.')
         plt.show()
 
+    if write == 'true':
+        name = ifile + '_std.txt'
+        f = open(name, 'w')
+        for k in range(len(std)):
+            f.write(str(std[k]))
+            f.write('\n')
+
     if mode_filtration == 'true':
         print 'The max STD is', max(std), 'and the min STD is', min(std)
         std_threshold = raw_input('Please enter the filtration lavel: ')
@@ -356,7 +363,7 @@ def pcal_delay(ifile, ntones, dbg, qwerty, write, mode_filtration):
 
     if dbg == 'true':
         axar[0].set_xlabel(u'время, мкс')
-        axar[0].set_ylabel(u'напряжение, мВ')
+        axar[0].set_ylabel(u'напряжение, В')
     
     for j in range(acc_periods):
         ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
@@ -441,11 +448,9 @@ def pcal_delay(ifile, ntones, dbg, qwerty, write, mode_filtration):
     if write == 'true':
         name = ifile + '_delays.txt'
         f = open(name, 'w')
-        k = 0
-        while k < len(li):
+        for k in range(len(li)):
             f.write(str(li[k]))
             f.write('\n')
-            k = k + 1
 
     return li
 
@@ -510,7 +515,7 @@ if __name__ == '__main__':
     
             what = raw_input()
             if what == '2':
-                pcal_phaseresponse(ifile, ntones, dbg, mode_filtration)
+                pcal_phaseresponse(ifile, ntones, dbg, mode_filtration, write)
             elif what == '1':
                 qwerty = '1'
                 pcal_delay(ifile, ntones, dbg, qwerty, write, mode_filtration)
@@ -537,7 +542,8 @@ if __name__ == '__main__':
         elif os.path.isdir(ifile):
             print 'Hello. Welcome to PCal.'
             print 'Press 1 if you want to calculate time delays and see differences between them.'
-            print 'Press 2 if you want to leave.'
+            print 'Press 2 if you want to analize STD graphics of all your files.'
+            print 'Press 3 if you want to leave.'
             mode = raw_input()
 
             if mode == '1':
@@ -590,6 +596,45 @@ if __name__ == '__main__':
                         i = i + 2
 
             elif mode == '2':
+                try:
+                    all_files = os.listdir(ifile)
+
+                    files = []
+
+                    for i in range(len(all_files)):
+                        if (all_files[i])[0:5] == 'PCAL_' and (all_files[i])[-1] == 'V':
+                            files.append(ifile + all_files[i])
+
+                    files = sorted(files)
+
+                    for i in range(len(files)):
+                        pcal_read(files[i], ntone, acc_period)
+                        pcal_phaseresponse(files[i], ntones, dbg, mode_filtration, write)
+
+                        sys.stdout.write(' files have been processed...' + ('\r%d'%(i + 1) + '/' + str(len(files))))
+                        sys.stdout.flush()
+                   
+                except NameError:
+                    ntone = '1 : 512'
+
+                    all_files = os.listdir(ifile)
+
+                    files = []
+
+                    for i in range(len(all_files)):
+                        if (all_files[i])[0:5] == 'PCAL_' and (all_files[i])[-1] == 'V':
+                            files.append(ifile + all_files[i])
+
+                    files = sorted(files)
+
+                    for i in range(len(files)):
+                        pcal_read(files[i], ntone, acc_period)
+                        pcal_phaseresponse(files[i], ntones, dbg, mode_filtration, write)
+
+                        sys.stdout.write(' files have been processed...' + ('\r%d'%(i + 1) + '/' + str(len(files))))
+                        sys.stdout.flush()
+
+            elif mode == '3':
                 sys.exit()
 
     else:
