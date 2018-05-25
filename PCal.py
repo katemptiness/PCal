@@ -434,7 +434,7 @@ def pcal_delay(ifile, ntones, dbg, qwerty, write, mode_filtration):
     if dbg == 'true':
         plt.gcf().canvas.set_window_title(ifile)
         if qwerty == '0':
-            plt.show()
+            plt.show(block = False)
         elif qwerty == '1':
             plt.show()
 
@@ -473,6 +473,7 @@ def pcal_diff(a, b):
     print '\nThe slope of trend line is', "%.3f" % (m)
 
     if dbg == 'true':
+        plt.figure()
         plt.plot(xlist, diff, 'o')
         plt.plot(xlist, trend)
         plt.grid()
