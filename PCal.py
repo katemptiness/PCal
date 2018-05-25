@@ -4,13 +4,13 @@
 import numpy as np, numpy.fft as fft, numpy.linalg as linalg
 import cmath, math
 import getopt, sys
-import matplotlib.pyplot as plt
 import os
 from itertools import count, izip
 
 def main():
     global dbg, ntone, ifile, acc_period, write, mode_filtration
 
+    ifile = None
     dbg = 'false'
     acc_period = None
     write = 'false'
@@ -284,7 +284,7 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration):
         plt.gcf().canvas.set_window_title(u'Угол наклона от номера тона')
 
         for j in range(counter):
-            BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
+            BC = (trends[j])[-1] - (trends[j])[0]
             AB = np.sqrt(BC * BC + AC * AC)
             alpha = np.arcsin(BC / AB) * (180 / np.pi)
             plt.plot((int(ntones[j]) + 1), alpha, 'o')
@@ -310,7 +310,7 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration):
     if mode_filtration == 'true':
         print 'The max STD is', max(std), 'and the min STD is', min(std)
         std_threshold = raw_input('Please enter the filtration lavel: ')
-        std_threshold = int(std_threshold) * min(std)
+        std_threshold = float(std_threshold)
 
         good_ntones = []
 
@@ -486,6 +486,14 @@ def pcal_diff(a, b):
 if __name__ == '__main__':
     global qwerty, files
     main()
+
+    if dbg == 'true':
+        import matplotlib.pyplot as plt
+
+    if ifile == None:
+        print 'You should enter the path to your file!\n'
+        usage()
+        sys.exit()
 
     if os.path.exists(ifile):
 
