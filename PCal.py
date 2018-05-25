@@ -228,7 +228,7 @@ def pcal_read(ifile, ntone, acc_period):
         smh = ((ifile.readline()).split())[6:]
         for i in range(counter):
             table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))))
-            table[i])[j] = (table[i])[j] * (180 / np.pi)
+            (table[i])[j] = (table[i])[j] * (180 / np.pi)
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
 
     ifile.close()
@@ -240,15 +240,18 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration):
     time = np.linspace(0, (accumulation_period * acc_periods - accumulation_period), acc_periods)
     trends = []
 
+    if dbg == 'true':
+        plt.figure(1)
+        plt.gcf().canvas.set_window_title(u'Фаза от времени')
+    
+    A = (np.vstack([time, np.ones(len(time))])).transpose()
+
     for i in range(counter):
-        A = (np.vstack([time, np.ones(len(time))])).transpose()
         m, c = linalg.lstsq(A, unwraping(unwraping(table[i - 1])), rcond = -1)[0]
         trend = m * time + c
         trends.append(trend)
-                
-        if dbg == 'true':
-            plt.figure(1)
-            plt.gcf().canvas.set_window_title(u'Фаза от времени')
+        
+        if dbg == 'true':        
             plt.plot(time, unwraping(unwraping(table[i - 1])), 'o')
             plt.plot(time, trend)
 
@@ -276,13 +279,14 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration):
         plt.xlabel(u'время, с')
         plt.ylabel(u'фаза, градусы')
         plt.show(block = False)
+        
+        plt.figure(2)
+        plt.gcf().canvas.set_window_title(u'Угол наклона от номера тона')
 
         for j in range(counter):
             BC = (trends[j])[acc_periods - 1] - (trends[j])[0]
             AB = np.sqrt(BC * BC + AC * AC)
             alpha = np.arcsin(BC / AB) * (180 / np.pi)
-            plt.figure(2)
-            plt.gcf().canvas.set_window_title(u'Угол наклона от номера тона')
             plt.plot((int(ntones[j]) + 1), alpha, 'o')
 
         plt.grid()
@@ -311,8 +315,7 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration):
         good_ntones = []
 
         for j in range(counter):
-            if std[j] < std_threshold:
-                good_ntones.append(j)
+            if std[j] < std_threshold: good_ntones.append(j)
 
         good_ntones = np.asarray(good_ntones)
 
@@ -351,14 +354,16 @@ def pcal_delay(ifile, ntones, dbg, qwerty, write, mode_filtration):
     ampls = []
     xlist = []
 
+    if dbg == 'true':
+        axar[0].set_xlabel(u'время, мкс')
+        axar[0].set_ylabel(u'напряжение, мВ')
+    
     for j in range(acc_periods):
         ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))
-            
+        
         if dbg == 'true':
             axar[0].plot(time, ph1)
             plt.pause(0.001)
-            axar[0].set_xlabel(u'время, мкс')
-            axar[0].set_ylabel(u'напряжение, мВ')
                 
         number = max(izip(ph1, count()))[1]
         j0 = number
