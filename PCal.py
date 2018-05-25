@@ -435,7 +435,7 @@ def pcal_delay(ifile, ntones, itype, dbg, qwerty, write, mode_filtration):
     if dbg == 'true':
         plt.gcf().canvas.set_window_title(ifile)
         if qwerty == '0':
-            plt.show(block = False)
+            plt.show()
         elif qwerty == '1':
             plt.show()
 
@@ -465,7 +465,6 @@ def pcal_diff(a, b):
 
     diff = abs(np.asarray(a) - np.asarray(b)) * 1e6
 
-    xlist = np.linspace(1, len(a), len(a))
     xlist = np.linspace(0, (len(a) / 2 - 0.5), len(a))
 
     A = (np.vstack([xlist, np.ones(len(xlist))])).transpose()
@@ -480,7 +479,7 @@ def pcal_diff(a, b):
         plt.grid()
         plt.xlabel(u'время, с')
         plt.ylabel(u'разностная задержка, пс')
-        plt.gcf().canvas.set_window_title('Difference between time delays')
+        plt.gcf().canvas.set_window_title(u'Разностная задержка')
         plt.show()
 
 
@@ -497,8 +496,8 @@ if __name__ == '__main__':
             
             print '\nNow tell me what you want to do:'
             print 'press 1 if you want to plot signal and see the time delay;'
-            print 'press 2 if you want to plot tilt angle and STD graphics and see phase-frequency response;'
-            print 'press 3 if you want to see the difference between time delays in 2 different files.'
+            print 'press 2 if you want to plot tilt angle and STD graphics;'
+            print 'press 3 if you want to see the difference between time delays in 2 different files;'
             print 'press 4 if you want to leave.'
     
             what = raw_input()
