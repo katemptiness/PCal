@@ -14,7 +14,7 @@ def main():
     dbg = 'false'
     acc_period = None
     write = 'false'
-    mode_filtration = 'false'
+    mode_filtration = None
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hf:n:d:a:w:m:', ['ifile=', 'ntone=', 'dbg=', 'acc_period=', 'write=', 'mode_filtration='])
@@ -37,7 +37,7 @@ def main():
                 print 'Sorry, -a parameter should be more than 1.'
                 sys.exit()
         elif opt in ('-w', '--write'): write = arg
-        elif opt in ('-m', '--mode_filtration'): mode_filtration = arg
+        elif opt in ('-m', '--mode_filtration'): mode_filtration = float(arg)
 
     
 def usage():
@@ -314,10 +314,8 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration, write):
             f.write(str(std[k]))
             f.write('\n')
 
-    if mode_filtration == 'true':
-        print 'The max STD is', max(std), 'and the min STD is', min(std)
-        std_threshold = raw_input('Please enter the filtration lavel: ')
-        std_threshold = float(std_threshold)
+    if mode_filtration != None:
+        std_threshold = mode_filtration
 
         good_ntones = []
 
