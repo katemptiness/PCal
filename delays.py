@@ -157,8 +157,12 @@ def reading(files):
 
 	plt.grid()
 	plt.xlabel(u'время, с')
-	plt.ylabel(u'разностная задержка, пс')
-	plt.gcf().canvas.set_window_title(u'Разностная задержка')
+	if mode == 'dif':
+		plt.ylabel(u'разностная задержка, пс')
+		plt.gcf().canvas.set_window_title(u'Разностная задержка')
+	else:
+		plt.ylabel(u'задержка, пс')
+		plt.gcf().canvas.set_window_title(u'Временная задержка')
 	plt.show()
 
 
