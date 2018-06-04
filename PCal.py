@@ -361,7 +361,7 @@ def pcal_delay(ifile, ntones, dbg, qwerty, write, mode_filtration):
 
     if dbg == 'true':
         axar[0].set_xlabel(u'время, мкс')
-        axar[0].set_ylabel(u'напряжение, В')
+        axar[0].set_ylabel(u'амплитуда, усл.ед.')
     
     for j in range(acc_periods):
         ph1 = abs(fft.ifft(ph[(j * counter) : (j * counter + counter)]))

@@ -11,7 +11,6 @@ def main():
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], 'hf:', ['files='])
 	except getopt.GetoptError:
-		print 'Looks like something is wrong...'
 		usage()
 		sys.exit()
 	for opt, arg in opts:
@@ -31,8 +30,7 @@ def reading(files):
 	for k in range(len(all_files)):
 		ifile = open(files + all_files[k])
 		std_s = []
-		for i in range(512):
-			std_s.append(float(ifile.readline()))
+		for i in range(512): std_s.append(float(ifile.readline()))
 		plt.plot(std_s)
 
 	plt.grid()
@@ -40,6 +38,7 @@ def reading(files):
 	plt.ylabel(u'СКО, градусы')
 	plt.gcf().canvas.set_window_title(files)
 	plt.show()
+
 
 if __name__ == '__main__':
 	main()

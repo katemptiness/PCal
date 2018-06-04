@@ -71,9 +71,9 @@ def reading(files):
 		if mode == 'diff':
 			for j in range(lens[i]): delay_difs.append(abs(float(file1.readline()) - float(file2.readline())) * 1e6)
 		elif mode == '1':
-			for j in range(lens[i]): delay_difs.append(abs(float(file1.readline())) * 1e6)
+			for j in range(lens[i]): delay_difs.append(float(file1.readline()) * 1e6)
 		elif mode == '2':
-			for j in range(lens[i]): delay_difs.append(abs(float(file2.readline())) * 1e6)
+			for j in range(lens[i]): delay_difs.append(float(file2.readline()) * 1e6)
 		i = i + 1
 		k = k + 2
 
