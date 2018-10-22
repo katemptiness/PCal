@@ -28,7 +28,8 @@ def main():
         elif opt in ('-f', '--ifile'):
             ifile = arg
             if os.path.isfile(ifile):
-                ntone = '1 : ' + str(file_read(ifile))
+                #ntone = '1 : ' + str(file_read(ifile))
+                ntone = '1 : 512'
         elif opt in ('-n', '--ntone'): ntone = arg
         elif opt in ('-d', '--dbg'): dbg = arg
         elif opt in ('-a', '--acc_period'):
@@ -58,10 +59,27 @@ def usage():
 
 
 def file_read(ifile):
-    ifile = open(ifile)
-    for i in range(5): ifile.readline()
-    counter = int((str(ifile.readline()).split())[5])
-    return counter
+    where_to_go = open(ifile)
+    if (where_to_go.readline())[0] == '#': 
+        ifile = open(ifile)
+
+        i = 0
+        while i < 5:
+            ifile.readline()
+            i = i + 1
+
+        counter = int((str(ifile.readline()).split())[5])
+
+        return counter
+    
+    else:
+        ifile = open(ifile, 'rb')
+    
+        pcal_version = str(ifile.read(20))
+        bandwidth, = struct.unpack('i', ifile.read(4))
+        bandwidth = int(bandwidth * 1e-6)
+    
+        return bandwidth
 
 
 def ntone_form(ntone):
@@ -94,7 +112,7 @@ def ntone_form(ntone):
 
 def unwraping(lista):
     for k in range(len(lista) - 1):
-        if abs(lista[k] - lista[k + 1]) > 340:
+        if abs(lista[k] - lista[k + 1]) > 330:
             list1 = list2 = []
         
             for i in range(len(lista)):
@@ -113,13 +131,13 @@ def unwraping(lista):
     
             if c == '+':
                 for i in range(len(lista) - 1):
-                    if (lista[i + 1] - lista[i]) < -180: lista[i + 1] = lista[i + 1] + 360
-                    elif (lista[i + 1] - lista[i]) > 180: lista[i] = lista[i] + 360
+                    if (lista[i + 1] - lista[i]) < -150: lista[i + 1] = lista[i + 1] + 360
+                    elif (lista[i + 1] - lista[i]) > 150: lista[i] = lista[i] + 360
     
             elif c == '-':
                 for i in range(len(lista) - 1):
-                    if (lista[i + 1] - lista[i]) < -340: lista[i] = lista[i] - 360
-                    elif (lista[i + 1] - lista[i]) > 340: lista[i + 1] = lista[i + 1] - 360
+                    if (lista[i + 1] - lista[i]) < -330: lista[i] = lista[i] - 360
+                    elif (lista[i + 1] - lista[i]) > 330: lista[i + 1] = lista[i + 1] - 360
 
             if np.mean(lista) > 0:
                 if lista[0] < 0 and lista[1] < 0:
@@ -232,12 +250,86 @@ def pcal_read(ifile, ntone, acc_period):
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
 
     ifile.close()
+
+    print table[0]
+
+def pcal_reading(ifile, ntone, acc_period):
+    global table, counter, ph, acc_periods, ntones, accumulation_period
     
+    r = ifile
+
+    ifile = open(ifile, 'rb')
+    
+    pcal_version = str(ifile.read(20))
+    bandwidth, = struct.unpack('i', ifile.read(4))
+    bandwidth = int(bandwidth * 1e-6)
+    frequency_offset, = struct.unpack('i', ifile.read(4))
+    number_of_channels, = struct.unpack('i', ifile.read(4))
+    accumulation_period, = struct.unpack('f', ifile.read(4))
+    acc, = struct.unpack('i', ifile.read(4))
+
+    if acc_period == None:
+        acc_periods = acc
+    else:
+        acc_periods = acc_period
+    
+    ph = []
+    
+    ntones = ntone_form(ntone)
+    counter = len(ntones)
+
+    i = 0
+    while i < acc_periods:
+        j = 0
+        while j < file_read(r):
+            el1, = struct.unpack('d', ifile.read(8))
+            el2, = struct.unpack('d', ifile.read(8))
+
+            if len(ntones) == file_read(r):
+                ph.append(complex(el1, el2))
+
+            else:
+                k = 0
+                while k < len(ntones):
+                
+                    if j == ntones[k]:
+                        ph.append(complex(el1, el2))
+                
+                    k = k + 1
+
+            j = j + 1
+        i = i + 1
+
+    ph_table = (np.empty((int(counter), 0))).tolist()
+    
+    i = 0
+    while i < counter:
+        j = 0
+        while j < acc_periods:
+            ph_table[i].append((ph[i + counter * j]))
+            j = j + 1
+        i = i + 1
+
+    table = (np.empty((int(counter), 0))).tolist()
+    
+    i = 0
+    while i < counter:
+        j = 0
+        while j < acc_periods:
+            table[i].append((cmath.phase(((ph_table[i])[j]))) * (180 / np.pi))
+            j = j + 1
+        i = i + 1
+
+    ifile.close()
+    
+    return table
+
 
 def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration, write):
     global trends, std, new_table, table
 
     time = np.linspace(0, (accumulation_period * acc_periods - accumulation_period), acc_periods)
+
     trends = []
 
     if dbg == 'true':
@@ -503,7 +595,11 @@ if __name__ == '__main__':
         if os.path.isfile(ifile):
             print 'Hello. Welcome to PCal. Please wait until your file will be ready...'
 
-            pcal_read(ifile, ntone, acc_period)
+            try:
+                pcal_read(ifile, ntone, acc_period)
+            except:
+                import struct
+                pcal_reading(ifile, ntone, acc_period)
             
             print '\nNow tell me what you want to do:'
             print 'press 1 if you want to plot signal and see the time delay;'
@@ -524,8 +620,11 @@ if __name__ == '__main__':
                 print '\nPlease enter the 2nd file...'
                 new_ifile = raw_input()
         
-                where_to_go = open(ifile)
-                pcal_read(new_ifile, ntone, acc_period)
+                try:
+                    pcal_read(new_ifile, ntone, acc_period)
+                except:
+                    import struct
+                    pcal_reading(new_ifile, ntone, acc_period)
         
                 b = pcal_delay(new_ifile, ntones, dbg, qwerty, write, mode_filtration)
 
