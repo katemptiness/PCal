@@ -251,7 +251,6 @@ def pcal_read(ifile, ntone, acc_period):
 
     ifile.close()
 
-    print table[0]
 
 def pcal_reading(ifile, ntone, acc_period):
     global table, counter, ph, acc_periods, ntones, accumulation_period
@@ -287,14 +286,11 @@ def pcal_reading(ifile, ntone, acc_period):
 
             if len(ntones) == file_read(r):
                 ph.append(complex(el1, el2))
-
             else:
                 k = 0
                 while k < len(ntones):
-                
                     if j == ntones[k]:
                         ph.append(complex(el1, el2))
-                
                     k = k + 1
 
             j = j + 1
@@ -319,6 +315,7 @@ def pcal_reading(ifile, ntone, acc_period):
             table[i].append((cmath.phase(((ph_table[i])[j]))) * (180 / np.pi))
             j = j + 1
         i = i + 1
+    table.reverse()
 
     ifile.close()
     
@@ -400,10 +397,10 @@ def pcal_phaseresponse(ifile, ntones, dbg, mode_filtration, write):
         plt.show()
 
     if write == 'true':
-        name = ifile + '_std.txt'
+        name = ifile + '_ph.txt'
         f = open(name, 'w')
-        for k in range(len(std)):
-            f.write(str(std[k]))
+        for k in range(len(ph)):
+            f.write(str((cmath.phase(ph[k])) * (180 / np.pi)))
             f.write('\n')
 
     if mode_filtration != None:
