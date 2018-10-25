@@ -30,8 +30,16 @@ def main():
         elif opt in ('-r', '--ifile2'): ifile2 = arg                
         elif opt in ('-d', '--ifile1'): ifile1 = arg
         elif opt in ('-n', '--ntone'): ntone = arg
-        elif opt in ('-u', '--unw'): unw = arg
-    	elif opt in ('-w', '--write'): write = arg
+        elif opt in ('-u', '--unw'):
+        	if arg == 'true' or arg == 'false': unw = arg
+        	else:
+        		usage()
+        		sys.exit()
+    	elif opt in ('-w', '--write'):
+    		if arg == 'true' or arg == 'false': write = arg
+    		else:
+    			usage()
+    			sys.exit()
 
 
 def usage():
@@ -191,10 +199,12 @@ def pcal_rasfx(ifile2, ntone):
     for i in range(counter):
         for j in range(acc_periods): table2[i].append((cmath.phase(((ph_table[i])[j]))) * (180 / np.pi))
 
-    for i in range(counter):
-    	table2[i].reverse()
-    	table2[i] = unwraping1(table2[i])
+    table2 = ((np.asarray(table2)).transpose()).tolist()
+    for i in range(acc_periods): table2[i].reverse()
+    table2 = ((np.asarray(table2)).transpose()).tolist()
 
+    for i in range(counter): table2[i] = unwraping1(table2[i])
+    
     ifile.close()
 
 
@@ -204,7 +214,7 @@ def pcal_diff(table1, table2):
 	diff_massive = []
 
 	for i in range(counter):
-		for j in range(acc_periods): diff_massive.append(((table1[i])[j] - (table2[i])[j]))
+		for j in range(acc_periods): diff_massive.append(((table2[i])[j] - (table1[i])[j]))
 
 	new_diff_massive = []
 		
@@ -230,7 +240,7 @@ def pcal_plot():
 	
 	massive = []
 	for k in range((len(diff_massive) - 1)): massive.append(diff_massive[k + 1] - diff_massive[k])
-	if unw == 'true': massive = unwraping2(massive)
+	if unw == 'true': massive = unwraping1(massive)
 
 	freq = np.linspace(1, len(diff_massive), (len(diff_massive) - 1))
 	A = (np.vstack([freq, np.ones(len(freq))])).transpose()
