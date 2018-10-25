@@ -1,22 +1,24 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import numpy as np, numpy.fft as fft, numpy.linalg as linalg
+import numpy as np, numpy.linalg as linalg
 import cmath
 import getopt, sys
 import os
 import struct
+import matplotlib.pyplot as plt
 
 def main():
-    global ntone, ifile1, ifile2, average, write
+    global ntone, ifile1, ifile2, write, unw
 
     ifile1 = None
     ifile2 = None
     ntone = '1 : 512'
-    average = 'false'
     write = 'false'
+    unw = 'true'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hd:r:n:a:w:', ['ifile1=', 'ifile2=', 'ntone=', 'average=', 'write='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hd:r:n:w:', ['ifile1=', 'ifile2=', 'ntone=', 'write=', 'unw='])
     except getopt.GetoptError:
         usage()
         sys.exit()
@@ -27,28 +29,28 @@ def main():
         elif opt in ('-r', '--ifile2'): ifile2 = arg                
         elif opt in ('-d', '--ifile1'): ifile1 = arg
         elif opt in ('-n', '--ntone'): ntone = arg
-    	elif opt in ('-a', '--average'):
-    		if arg == 'true' or arg == 'false': average = arg
-    		else:
-    			usage()
-    			sys.exit()
     	elif opt in ('-w', '--write'):
     		if arg == 'true' or arg == 'false': write = arg
     		else:
     			usage()
     			sys.exit()
-        
+    	elif opt in ('-u', '--unw'):
+        	if arg == 'true' or arg == 'false': unw = arg
+    		else:
+    			usage()
+    			sys.exit()
+
 
 def usage():
     print 'You can use this forms to work:'
     print '-d is for path to the DiFX file;'
     print '-r is for path to the RASFX file;'
     print '-n is for tone numbers;'
-    print '-a is for average mode (true or false);'
-    print '-w is for phases recording (true or false).'
+    print '-w is for phases recording (true or false);'
+    print '-u is for unwraping mode (true or false).'
 
 
-def unwraping(lista):
+def unwraping1(lista):
     for k in range(len(lista) - 1):
         if abs(lista[k] - lista[k + 1]) > 345 or abs(lista[k + 1] - lista[k]) > 345:
             list1 = list2 = []
@@ -87,6 +89,11 @@ def unwraping(lista):
                     lista[1] = lista[1] - 360
 
     return lista
+
+
+def unwraping2(lista):
+   	for k in range(len(lista)): lista[k] = ((lista[k] / 360) - ((lista[k] / 360) // 1)) * 360
+   	return lista
 
 
 def ntone_form(ntone):
@@ -144,7 +151,7 @@ def pcal_difx(ifile1, ntone):
             (table1[i])[j] = ((table1[i])[j] * (180 / np.pi))
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
 
-    for k in range(counter): table1[k] = unwraping(table1[k])
+    for k in range(counter): table1[k] = unwraping1(table1[k])
     
     ifile.close()
 
@@ -193,7 +200,7 @@ def pcal_rasfx(ifile2, ntone):
 
     for i in range(counter):
     	table2[i].reverse()
-    	table2[i] = unwraping(table2[i])
+    	table2[i] = unwraping1(table2[i])
 
     ifile.close()
 
@@ -207,50 +214,72 @@ def pcal_diff(table1, table2):
 		for j in range(acc_periods): diff_massive.append(((table1[i])[j] - (table2[i])[j]))
 
 	new_diff_massive = []
+		
+	k = 0
+	while k < (counter * acc_periods):
+		new_diff_massive.append(np.mean(diff_massive[k : (k + acc_periods)]))
+		k = k + acc_periods
 
-	if average == 'true':
-		k = 0
-		while k < (counter * acc_periods):
-			new_diff_massive.append(np.mean(diff_massive[k : (k + acc_periods)]))
-			k = k + acc_periods
+	diff_massive = new_diff_massive
 
-		diff_massive = new_diff_massive
+
+def pcal_plot():
+	plt.figure(1)
+	plt.gcf().canvas.set_window_title(u'Зависимость разности фаз от частоты')
+	plt.plot(diff_massive, 'o')
+	plt.plot(diff_massive)
+	plt.grid()
+	plt.xticks(np.arange(0, (len(diff_massive) + 32), step = 32))
+	plt.yticks(np.arange(-420, 420, step = 60))
+	plt.xlabel(u'частота, МГц')
+	plt.ylabel(u'фаза, градусы')
+	plt.show(block = False)
 	
+	massive = []
+	for k in range((len(diff_massive) - 1)): massive.append(diff_massive[k + 1] - diff_massive[k])
+	if unw == 'true': massive = unwraping2(massive)
+
+	freq = np.linspace(1, len(diff_massive), (len(diff_massive) - 1))
+	A = (np.vstack([freq, np.ones(len(freq))])).transpose()
+	m, c = linalg.lstsq(A, massive, rcond = -1)[0]
+	trend = m * freq + c
+    	
+	mn = np.mean(massive)
+	s = np.std(massive)
+	print 'Mean is', "%.3f" % (mn)
+	print 'STD is', "%.3f" % (s)
+	print 'Angular coefficient of trend line is', "%.3f" % (m)
+
+	plt.figure(2)
+	plt.gcf().canvas.set_window_title(u'Зависимость разности разностных фаз от частоты')
+	plt.plot(massive, 'o')
+	plt.plot(massive)
+	plt.plot(trend)
+	plt.grid()
+	plt.xticks(np.arange(0, (len(diff_massive) + 32), step = 32))
+	plt.xlabel(u'частота, МГц')
+	plt.ylabel(u'фаза, градусы')
+	plt.show()
+
 
 if __name__ == '__main__':
+	main()
+
 	main()
 
 	if ifile1 != None:
 		pcal_difx(ifile1, ntone)
 
-		if write == 'true':
-			name = ifile1 + '_phases'
-			f = open(name, 'w')
-			for k in range(counter):
-				for i in range(acc_periods):
-					f.write(str((table1[k])[i]) + '\n')
-
 	if ifile2 != None:
 		pcal_rasfx(ifile2, ntone)
-
-		if write == 'true':
-			name = ifile2 + '_phases'
-			f = open(name, 'w')
-			for k in range(counter):
-				for i in range(acc_periods):
-					f.write(str((table2[k])[i]) + '\n')
 
 	if ifile1 != None and ifile2 != None:
 		pcal_diff(table1, table2)
 
-		if write == 'true' and average == 'false':
-			name = ifile1 + '_phases_diff'
-			f = open(name, 'w')
-			for k in range(counter * acc_periods):
-				f.write(str(diff_massive[k]))
-				f.write('\n')
-		elif write == 'true' and average == 'true':
+		if write == 'true':
 			name = ifile1 + '_phases_diff'
 			f = open(name, 'w')
 			for k in range(counter):
 				f.write(str(diff_massive[k]) + '\n')
+
+	pcal_plot()
