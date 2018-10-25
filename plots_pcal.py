@@ -6,10 +6,12 @@ import getopt, sys
 import matplotlib.pyplot as plt
 
 def main():
-    global ifile
+    global ifile, unw
+
+    unw = 'false'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf:', ['ifile='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hf:u:', ['ifile=', 'unw='])
     except getopt.GetoptError:
         usage()
         sys.exit()
@@ -18,11 +20,18 @@ def main():
             usage()
             sys.exit()
         elif opt in ('-f', '--ifile'): ifile = arg
+    	elif opt in ('-u', '--unw'):
+    		if arg == 'true' or arg == 'false':
+    			unw = arg
+    		else:
+    			usage()
+    			sys.exit()
 
     
 def usage():
     print 'You should use this form for work:'
-    print '-f is for path to the file.'
+    print '-f is for path to the file;'
+    print '-u is for unwraping mode (true or false).'
 
 
 def pcal_plot(ifile):
