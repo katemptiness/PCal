@@ -7,64 +7,43 @@ import os
 import struct
 
 def main():
-    global ntone, ifile, acc_period
+    global ntone, ifile1, ifile2, write
 
-    ifile = None
-    acc_period = None
+    ifile1 = None
+    ifile2 = None
+    ntone = '1 : 512'
+    write = 'false'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hf:n:a:', ['ifile=', 'ntone=', 'acc_period='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hd:r:n:w:', ['ifile1=', 'ifile2=', 'ntone=', 'write='])
     except getopt.GetoptError:
         usage()
-        sys.exit(2)
+        sys.exit()
     for opt, arg in opts:
         if opt in ('-h', '--help'):
             usage()
             sys.exit()
-        elif opt in ('-f', '--ifile'):
-            ifile = arg
-            if os.path.isfile(ifile):
-                ntone = '1 : 512'
+        elif opt in ('-r', '--ifile2'): ifile2 = arg                
+        elif opt in ('-d', '--ifile1'): ifile1 = arg
         elif opt in ('-n', '--ntone'): ntone = arg
-        elif opt in ('-a', '--acc_period'):
-            acc_period = int(arg)
-            if acc_period == 1:
-                print 'Sorry, -a parameter should be more than 1.'
-                sys.exit()
+    	elif opt in ('-w', '--write'):
+    		if arg == 'true' or arg == 'false': write = arg
+    		else:
+    			usage()
+    			sys.exit()
         
 
 def usage():
     print 'You can use this forms to work:'
-    print '-f is for path to the file or directory;'
+    print '-d is for path to the DiFX file;'
+    print '-r is for path to the RASFX file;'
     print '-n is for tone numbers;'
-    print '-a is for accumulation periods.'
-
-
-def file_read(ifile):
-    where_to_go = open(ifile)
-    if (where_to_go.readline())[0] == '#': 
-        ifile = open(ifile)
-
-        i = 0
-        while i < 5:
-            ifile.readline()
-            i = i + 1
-
-        counter = int((str(ifile.readline()).split())[5])
-
-        return counter
-    
-    else:
-        ifile = open(ifile, 'rb')
-    
-        pcal_version = str(ifile.read(20))
-        bandwidth, = struct.unpack('i', ifile.read(4))
-        bandwidth = int(bandwidth * 1e-6)
-    
-        return bandwidth
+    print '-w is for phases recording (true or false).'
 
 
 def ntone_form(ntone):
+    global ntones
+
     ntones = (str(ntone).replace(',', '')).split()
     
     tones = []
@@ -92,16 +71,13 @@ def ntone_form(ntone):
     return ntones
 
 
-def pcal_difx(ifile, ntone, acc_period):
-    global table
+def pcal_difx(ifile1, ntone):
+    global table1, counter, acc_periods
 
-    ifile = open(ifile)
+    ifile = open(ifile1)
 
-    if acc_period == None:
-        acc_periods = len((ifile).readlines()) - 5
-        ifile.seek(0)
-    else:
-        acc_periods = acc_period
+    acc_periods = len((ifile).readlines()) - 5
+    ifile.seek(0)
     
     for k in range(5): ifile.readline()
 
@@ -110,25 +86,25 @@ def pcal_difx(ifile, ntone, acc_period):
     ntones = ntone_form(ntone)
     counter = len(ntones)
 
-    table = (np.empty((counter, 0))).tolist()
+    table1 = (np.empty((counter, 0))).tolist()
     ph = []
     
     for j in range(acc_periods):
         smh = ((ifile.readline()).split())[6:]
         for i in range(counter):
-            table[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]), float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))))
-            (table[i])[j] = (table[i])[j] * (180 / np.pi)
+            table1[i].append(cmath.phase(complex(float(smh[(len(smh) - 1) - 1 - int(ntones[i]) * 4]),float(smh[(len(smh) - 1) - int(ntones[i]) * 4]))))
+            (table1[i])[j] = (table1[i])[j] * (180 / np.pi)
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
 
     ifile.close()
 
 
-def pcal_rasfx(ifile, ntone, acc_period):
-    global table
+def pcal_rasfx(ifile2, ntone):
+    global table2, counter, acc_periods
 
-    r = ifile
+    r = ifile2
 
-    ifile = open(ifile, 'rb')
+    ifile = open(ifile2, 'rb')
     
     pcal_version = str(ifile.read(20))
     bandwidth, = struct.unpack('i', ifile.read(4))
@@ -138,72 +114,79 @@ def pcal_rasfx(ifile, ntone, acc_period):
     accumulation_period, = struct.unpack('f', ifile.read(4))
     acc, = struct.unpack('i', ifile.read(4))
 
-    if acc_period == None:
-        acc_periods = acc
-    else:
-        acc_periods = acc_period
+    acc_periods = acc
     
     ph = []
     
     ntones = ntone_form(ntone)
     counter = len(ntones)
 
-    i = 0
-    while i < acc_periods:
-        j = 0
-        while j < file_read(r):
+    for i in range(acc_periods):
+        for j in range(bandwidth):
             el1, = struct.unpack('d', ifile.read(8))
             el2, = struct.unpack('d', ifile.read(8))
 
-            if len(ntones) == file_read(r):
-                ph.append(complex(el1, el2))
+            if len(ntones) == bandwidth: ph.append(complex(el1, el2))
             else:
-                k = 0
-                while k < len(ntones):
+                for k in range(len(ntones)):
                     if j == ntones[k]:
                         ph.append(complex(el1, el2))
-                    k = k + 1
-
-            j = j + 1
-        i = i + 1
 
     ph_table = (np.empty((int(counter), 0))).tolist()
     
-    i = 0
-    while i < counter:
-        j = 0
-        while j < acc_periods:
-            ph_table[i].append((ph[i + counter * j]))
-            j = j + 1
-        i = i + 1
+    for i in range(counter):
+        for j in range(acc_periods): ph_table[i].append((ph[i + counter * j]))
 
-    table = (np.empty((int(counter), 0))).tolist()
+    table2 = (np.empty((int(counter), 0))).tolist()
     
-    i = 0
-    while i < counter:
-        j = 0
-        while j < acc_periods:
-            table[i].append((cmath.phase(((ph_table[i])[j]))) * (180 / np.pi))
-            j = j + 1
-        i = i + 1
-    table.reverse()
+    for i in range(counter):
+        for j in range(acc_periods): table2[i].append((cmath.phase(((ph_table[i])[j]))) * (180 / np.pi))
+
+    for i in range(counter): table2[i].reverse()
 
     ifile.close()
-    
-    return table
 
+
+def pcal_diff(table1, table2):
+	global diff_massive
+
+	diff_massive = []
+
+	for i in range(counter):
+		for j in range(acc_periods): diff_massive.append(((table1[i])[j] - (table2[i])[j]))
+	
 
 if __name__ == '__main__':
 	main()
 
-	try:
-		pcal_difx(ifile, ntone, acc_period)
-	except:
-		pcal_rasfx(ifile, ntone, acc_period)
+	if ifile1 != None:
+		pcal_difx(ifile1, ntone)
 
-	name = ifile + '_phases'
-	f = open(name, 'w')
-	for k in range(512):
-		for i in range(42):
-			f.write(str((table[k])[i]))
-			f.write('\n')
+		if write == 'true':
+			name = ifile1 + '_phases'
+			f = open(name, 'w')
+			for k in range(counter):
+				for i in range(acc_periods):
+					f.write(str((table1[k])[i]))
+					f.write('\n')
+
+	if ifile2 != None:
+		pcal_rasfx(ifile2, ntone)
+
+		if write == 'true':
+			name = ifile2 + '_phases'
+			f = open(name, 'w')
+			for k in range(counter):
+				for i in range(acc_periods):
+					f.write(str((table2[k])[i]))
+					f.write('\n')
+
+	if ifile1 != None and ifile2 != None:
+		pcal_diff(table1, table2)
+
+		if write == 'true':
+			name = ifile1 + '_phases_diff'
+			f = open(name, 'w')
+			for k in range(counter * acc_periods):
+				f.write(str(diff_massive[k]))
+				f.write('\n')
