@@ -8,6 +8,7 @@ import os
 import struct
 import matplotlib.pyplot as plt
 
+
 def main():
     global ntone, ifile1, ifile2, write, unw
 
@@ -265,21 +266,15 @@ def pcal_plot():
 if __name__ == '__main__':
 	main()
 
-	main()
-
-	if ifile1 != None:
-		pcal_difx(ifile1, ntone)
-
-	if ifile2 != None:
-		pcal_rasfx(ifile2, ntone)
-
+	if ifile1 != None: pcal_difx(ifile1, ntone)
+	if ifile2 != None: pcal_rasfx(ifile2, ntone)
+	
 	if ifile1 != None and ifile2 != None:
 		pcal_diff(table1, table2)
 
 		if write == 'true':
 			name = ifile1 + '_phases_diff'
 			f = open(name, 'w')
-			for k in range(counter):
-				f.write(str(diff_massive[k]) + '\n')
+			for k in range(counter): f.write(str(diff_massive[k]) + '\n')
 
 	pcal_plot()
