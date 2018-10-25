@@ -19,7 +19,7 @@ def main():
     unw = 'true'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hd:r:n:w:', ['ifile1=', 'ifile2=', 'ntone=', 'write=', 'unw='])
+        opts, args = getopt.getopt(sys.argv[1:], 'hd:r:n:w:u:', ['ifile1=', 'ifile2=', 'ntone=', 'write=', 'unw='])
     except getopt.GetoptError:
         usage()
         sys.exit()
@@ -30,16 +30,8 @@ def main():
         elif opt in ('-r', '--ifile2'): ifile2 = arg                
         elif opt in ('-d', '--ifile1'): ifile1 = arg
         elif opt in ('-n', '--ntone'): ntone = arg
-    	elif opt in ('-w', '--write'):
-    		if arg == 'true' or arg == 'false': write = arg
-    		else:
-    			usage()
-    			sys.exit()
-    	elif opt in ('-u', '--unw'):
-        	if arg == 'true' or arg == 'false': unw = arg
-    		else:
-    			usage()
-    			sys.exit()
+        elif opt in ('-u', '--unw'): unw = arg
+    	elif opt in ('-w', '--write'): write = arg
 
 
 def usage():
