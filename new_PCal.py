@@ -50,7 +50,7 @@ def usage():
 
 def unwraping(lista):
     for k in range(len(lista) - 1):
-        if abs(lista[k] - lista[k + 1]) > 330 or abs(lista[k + 1] - lista[k]) > 330:
+        if abs(lista[k] - lista[k + 1]) > 345 or abs(lista[k + 1] - lista[k]) > 345:
             list1 = list2 = []
         
             for i in range(len(lista)):
@@ -69,13 +69,13 @@ def unwraping(lista):
     
             if c == '+':
                 for i in range(len(lista) - 1):
-                    if (lista[i + 1] - lista[i]) < -150: lista[i + 1] = lista[i + 1] + 360
-                    elif (lista[i + 1] - lista[i]) > 150: lista[i] = lista[i] + 360
+                    if (lista[i + 1] - lista[i]) < -180: lista[i + 1] = lista[i + 1] + 360
+                    elif (lista[i + 1] - lista[i]) > 180: lista[i] = lista[i] + 360
     
             elif c == '-':
                 for i in range(len(lista) - 1):
-                    if (lista[i + 1] - lista[i]) < -330: lista[i] = lista[i] - 360
-                    elif (lista[i + 1] - lista[i]) > 330: lista[i + 1] = lista[i + 1] - 360
+                    if (lista[i + 1] - lista[i]) < -180: lista[i] = lista[i] - 360
+                    elif (lista[i + 1] - lista[i]) > 180: lista[i + 1] = lista[i + 1] - 360
 
             if np.mean(lista) > 0:
                 if lista[0] < 0 and lista[1] < 0:
