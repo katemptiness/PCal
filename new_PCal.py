@@ -144,7 +144,7 @@ def pcal_difx(ifile1, ntone):
             (table1[i])[j] = ((table1[i])[j] * (180 / np.pi))
             ph.append(complex(float(smh[2 + int(ntones[i]) * 4]), float(smh[3 + int(ntones[i]) * 4])))
 
-    for k in range(counter): table1[k] = unwraping(unwraping(table1[k]))
+    for k in range(counter): table1[k] = unwraping(table1[k])
     
     ifile.close()
 
@@ -193,7 +193,7 @@ def pcal_rasfx(ifile2, ntone):
 
     for i in range(counter):
     	table2[i].reverse()
-    	table2[i] = unwraping(unwraping(table2[i]))
+    	table2[i] = unwraping(table2[i])
 
     ifile.close()
 
